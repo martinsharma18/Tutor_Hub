@@ -1,0 +1,11 @@
+D:\home\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.deps.json
+D:\home\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.dll
+D:\home\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.pdb
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.AssemblyInfoInputs.cache
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.AssemblyInfo.cs
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.csproj.CoreCompileInputs.cache
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.dll
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\refint\TuitionPlatform.Domain.dll
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.pdb
+D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\ref\TuitionPlatform.Domain.dll

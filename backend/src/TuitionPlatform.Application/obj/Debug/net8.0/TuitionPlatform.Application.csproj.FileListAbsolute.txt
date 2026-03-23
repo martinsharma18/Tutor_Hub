@@ -1,0 +1,15 @@
+D:\home\backend\src\TuitionPlatform.Application\bin\Debug\net8.0\TuitionPlatform.Application.deps.json
+D:\home\backend\src\TuitionPlatform.Application\bin\Debug\net8.0\TuitionPlatform.Application.dll
+D:\home\backend\src\TuitionPlatform.Application\bin\Debug\net8.0\TuitionPlatform.Application.pdb
+D:\home\backend\src\TuitionPlatform.Application\bin\Debug\net8.0\TuitionPlatform.Domain.dll
+D:\home\backend\src\TuitionPlatform.Application\bin\Debug\net8.0\TuitionPlatform.Domain.pdb
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.csproj.AssemblyReference.cache
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.AssemblyInfoInputs.cache
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.AssemblyInfo.cs
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.csproj.CoreCompileInputs.cache
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionP.E24EDA76.Up2Date
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.dll
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\refint\TuitionPlatform.Application.dll
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\TuitionPlatform.Application.pdb
+D:\home\backend\src\TuitionPlatform.Application\obj\Debug\net8.0\ref\TuitionPlatform.Application.dll
