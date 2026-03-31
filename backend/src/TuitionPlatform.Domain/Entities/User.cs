@@ -19,8 +19,5 @@ public class User : AuditableEntity
 
     public bool EmailVerified { get; set; }
 
-    public ParentProfile? ParentProfile { get; set; }
-
     public TeacherProfile? TeacherProfile { get; set; }
 }
-

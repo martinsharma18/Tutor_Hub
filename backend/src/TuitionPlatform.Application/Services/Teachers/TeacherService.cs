@@ -72,7 +72,7 @@ public class TeacherService : ITeacherService
         var post = await _tuitionPostRepository.GetByIdAsync(request.TuitionPostId, cancellationToken)
                    ?? throw new NotFoundException("Tuition Post", request.TuitionPostId);
 
-        if (post.Status is not TuitionPostStatus.Approved and not TuitionPostStatus.Open)
+        if (post.Status != TuitionPostStatus.Approved && post.Status != TuitionPostStatus.Open)
         {
             throw new ForbiddenException("You can only apply to approved or open posts.");
         }

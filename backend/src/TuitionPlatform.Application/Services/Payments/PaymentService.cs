@@ -12,7 +12,6 @@ public class PaymentService : IPaymentService
 {
     private readonly IUserRepository _userRepository;
     private readonly ITuitionPostRepository _tuitionPostRepository;
-    private readonly IParentProfileRepository _parentProfileRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IAdminSettingsRepository _adminSettingsRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,7 +20,6 @@ public class PaymentService : IPaymentService
     public PaymentService(
         IUserRepository userRepository,
         ITuitionPostRepository tuitionPostRepository,
-        IParentProfileRepository parentProfileRepository,
         IPaymentRepository paymentRepository,
         IAdminSettingsRepository adminSettingsRepository,
         IUnitOfWork unitOfWork,
@@ -29,7 +27,6 @@ public class PaymentService : IPaymentService
     {
         _userRepository = userRepository;
         _tuitionPostRepository = tuitionPostRepository;
-        _parentProfileRepository = parentProfileRepository;
         _paymentRepository = paymentRepository;
         _adminSettingsRepository = adminSettingsRepository;
         _unitOfWork = unitOfWork;
@@ -48,17 +45,7 @@ public class PaymentService : IPaymentService
         var post = await _tuitionPostRepository.GetByIdAsync(request.TuitionPostId, cancellationToken)
                    ?? throw new NotFoundException("Tuition post", request.TuitionPostId);
 
-        if (post.ParentProfileId is null)
-        {
-            throw new ValidationException(new Dictionary<string, string[]>
-            {
-                ["tuitionPostId"] = new[] { "Tuition post is not associated with a parent." }
-            });
-        }
-
-        var parentProfile = await _parentProfileRepository.GetByIdAsync(post.ParentProfileId.Value, cancellationToken)
-                               ?? throw new NotFoundException("Parent profile", post.ParentProfileId.Value);
-        var parentUserId = parentProfile.UserId;
+        var parentUserId = post.CreatedByUserId;
 
         var teacher = await _userRepository.GetByIdAsync(request.TeacherId, cancellationToken)
                       ?? throw new NotFoundException("Teacher", request.TeacherId);

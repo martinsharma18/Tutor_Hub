@@ -12,6 +12,8 @@ public class TeacherProfileConfiguration : IEntityTypeConfiguration<TeacherProfi
         builder.Property(t => t.Area).HasMaxLength(120);
         builder.Property(t => t.Subjects).HasMaxLength(1000);
         builder.Property(t => t.Classes).HasMaxLength(500);
+        builder.Property(t => t.Bio).HasMaxLength(2000);
+        builder.Property(t => t.ExperienceSummary).HasMaxLength(2000);
         builder.Property(t => t.HourlyRate).HasColumnType("decimal(18,2)");
 
         builder.HasMany(t => t.Applications)

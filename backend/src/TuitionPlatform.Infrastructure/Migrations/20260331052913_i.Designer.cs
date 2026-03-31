@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TuitionPlatform.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace TuitionPlatform.Infrastructure.Persistence.Migrations
+namespace TuitionPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(TuitionPlatformDbContext))]
-    partial class TuitionPlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331052913_i")]
+    partial class i
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,7 +77,7 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<Guid>("ParentProfileId")
+                    b.Property<Guid>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateOnly>("SelectedDate")
@@ -100,7 +103,7 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentProfileId");
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("TeacherProfileId");
 
@@ -155,54 +158,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                     b.HasIndex("ConversationKey");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("TuitionPlatform.Domain.Entities.ParentProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Area")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("ParentProfiles");
                 });
 
             modelBuilder.Entity("TuitionPlatform.Domain.Entities.Payment", b =>
@@ -357,7 +312,8 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Bio")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -375,8 +331,18 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CvUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExperienceSummary")
                         .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GraduationYear")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("HourlyRate")
@@ -397,6 +363,9 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("NationalId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PreferredMode")
                         .HasColumnType("int");
 
@@ -408,6 +377,9 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("University")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
@@ -484,9 +456,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                     b.Property<int>("Mode")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("ParentProfileId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Schedule")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -507,8 +476,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentProfileId");
 
                     b.ToTable("TuitionPosts");
                 });
@@ -570,40 +537,29 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TuitionPlatform.Domain.Entities.DemoRequest", b =>
                 {
-                    b.HasOne("TuitionPlatform.Domain.Entities.ParentProfile", "ParentProfile")
-                        .WithMany("DemoRequests")
-                        .HasForeignKey("ParentProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("TuitionPlatform.Domain.Entities.User", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TuitionPlatform.Domain.Entities.TeacherProfile", "TeacherProfile")
                         .WithMany("DemoRequests")
                         .HasForeignKey("TeacherProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TuitionPlatform.Domain.Entities.TuitionPost", "TuitionPost")
                         .WithMany("DemoRequests")
                         .HasForeignKey("TuitionPostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("ParentProfile");
+                    b.Navigation("Parent");
 
                     b.Navigation("TeacherProfile");
 
                     b.Navigation("TuitionPost");
-                });
-
-            modelBuilder.Entity("TuitionPlatform.Domain.Entities.ParentProfile", b =>
-                {
-                    b.HasOne("TuitionPlatform.Domain.Entities.User", "User")
-                        .WithOne("ParentProfile")
-                        .HasForeignKey("TuitionPlatform.Domain.Entities.ParentProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TuitionPlatform.Domain.Entities.Payment", b =>
@@ -674,22 +630,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TuitionPlatform.Domain.Entities.TuitionPost", b =>
-                {
-                    b.HasOne("TuitionPlatform.Domain.Entities.ParentProfile", "ParentProfile")
-                        .WithMany("TuitionPosts")
-                        .HasForeignKey("ParentProfileId");
-
-                    b.Navigation("ParentProfile");
-                });
-
-            modelBuilder.Entity("TuitionPlatform.Domain.Entities.ParentProfile", b =>
-                {
-                    b.Navigation("DemoRequests");
-
-                    b.Navigation("TuitionPosts");
-                });
-
             modelBuilder.Entity("TuitionPlatform.Domain.Entities.TeacherProfile", b =>
                 {
                     b.Navigation("Applications");
@@ -706,8 +646,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TuitionPlatform.Domain.Entities.User", b =>
                 {
-                    b.Navigation("ParentProfile");
-
                     b.Navigation("TeacherProfile");
                 });
 #pragma warning restore 612, 618

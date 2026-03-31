@@ -13,7 +13,6 @@ public class TuitionPlatformDbContext : DbContext, IUnitOfWork
     }
 
     public DbSet<User> Users => Set<User>();
-    public DbSet<ParentProfile> ParentProfiles => Set<ParentProfile>();
     public DbSet<TeacherProfile> TeacherProfiles => Set<TeacherProfile>();
     public DbSet<TuitionPost> TuitionPosts => Set<TuitionPost>();
     public DbSet<TeacherApplication> TeacherApplications => Set<TeacherApplication>();
@@ -28,7 +27,6 @@ public class TuitionPlatformDbContext : DbContext, IUnitOfWork
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new UserConfiguration());
-        modelBuilder.ApplyConfiguration(new ParentProfileConfiguration());
         modelBuilder.ApplyConfiguration(new TeacherProfileConfiguration());
         modelBuilder.ApplyConfiguration(new TuitionPostConfiguration());
         modelBuilder.ApplyConfiguration(new TeacherApplicationConfiguration());
@@ -39,4 +37,3 @@ public class TuitionPlatformDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 }
-

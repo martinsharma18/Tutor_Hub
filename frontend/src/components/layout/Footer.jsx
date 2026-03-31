@@ -26,109 +26,53 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {/* Logo & About */}
-          <div>
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
-                <GraduationCap className="h-6 w-6 text-white" />
+    <footer className="bg-slate-900 text-white border-t border-slate-800">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Logo & Copyright */}
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+                <GraduationCap className="h-5 w-5 text-white" />
               </div>
-              <span className="text-2xl font-bold">TuitionHub</span>
+              <span className="text-xl font-bold">TuitionHub</span>
             </Link>
-            <p className="text-slate-400 mb-4 leading-relaxed">
-              Connecting parents, students, and teachers on one simple platform. Find the best tutors or tuition vacancies near you.
+            <span className="text-slate-500 hidden sm:block">|</span>
+            <p className="text-slate-400 text-sm">
+              © {currentYear} All rights reserved.
             </p>
-            <div className="flex gap-4">
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    aria-label={social.label}
-                    className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors"
-                  >
-                    <Icon className="h-5 w-5" />
-                  </a>
-                );
-              })}
-            </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-slate-400 hover:text-orange-500 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+            {quickLinks.slice(0, 3).map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="text-sm text-slate-400 hover:text-orange-500 transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <Link to="/contact" className="text-sm text-slate-400 hover:text-orange-500 transition-colors">Contact</Link>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Legal</h3>
-            <ul className="space-y-3">
-              {legalLinks.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-slate-400 hover:text-orange-500 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+          {/* Social Links */}
+          <div className="flex gap-4">
+            {socialLinks.map((social) => {
+              const Icon = social.icon;
+              return (
                 <a
-                  href="mailto:info@tuitionhub.com"
-                  className="text-slate-400 hover:text-orange-500 transition-colors"
+                  key={social.label}
+                  href={social.href}
+                  aria-label={social.label}
+                  className="text-slate-400 hover:text-orange-600 transition-colors"
                 >
-                  info@tuitionhub.com
+                  <Icon className="h-5 w-5" />
                 </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <a
-                  href="tel:+1234567890"
-                  className="text-slate-400 hover:text-orange-500 transition-colors"
-                >
-                  +1 (234) 567-890
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <span className="text-slate-400">
-                  123 Education Street<br />
-                  Learning City, LC 12345
-                </span>
-              </li>
-            </ul>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Copyright */}
-        <div className="border-t border-slate-700 mt-12 pt-8 text-center">
-          <p className="text-slate-400">
-            © {currentYear} TuitionHub. All rights reserved.
-          </p>
         </div>
       </div>
     </footer>

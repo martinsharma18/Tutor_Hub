@@ -19,7 +19,7 @@ public class TuitionPostsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Parent,Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TuitionPostDto>> Create(CreateTuitionPostRequest request, CancellationToken cancellationToken)
     {
         var result = await _tuitionPostService.CreateAsync(User.GetUserId(), request, cancellationToken);
@@ -35,7 +35,7 @@ public class TuitionPostsController : ControllerBase
     }
 
     [HttpPatch("{postId:guid}/status")]
-    [Authorize(Roles = "Parent,Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TuitionPostDto>> UpdateStatus(Guid postId, UpdateTuitionPostStatusRequest request, CancellationToken cancellationToken)
     {
         var result = await _tuitionPostService.UpdateStatusAsync(User.GetUserId(), postId, request, cancellationToken);
@@ -65,5 +65,12 @@ public class TuitionPostsController : ControllerBase
         var result = await _tuitionPostService.GetPendingPostsAsync(request, cancellationToken);
         return Ok(result);
     }
-}
 
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<PagedResult<TuitionPostDto>>> AllPosts([FromQuery] PagedRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _tuitionPostService.GetAllPostsAsync(request, cancellationToken);
+        return Ok(result);
+    }
+}

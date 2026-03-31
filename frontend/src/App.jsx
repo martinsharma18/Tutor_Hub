@@ -6,18 +6,11 @@ import LandingPage from "./pages/LandingPage";
 import TeachersPage from "./pages/TeachersPage";
 import VacanciesPage from "./pages/VacanciesPage";
 import LoginPage from "./pages/auth/LoginPage";
-import RegisterParentPage from "./pages/auth/RegisterParentPage";
 import RegisterTeacherPage from "./pages/auth/RegisterTeacherPage";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
-import ParentDashboardPage from "./pages/parent/ParentDashboardPage";
-import CreatePostPage from "./pages/parent/CreatePostPage";
-import ParentPostsPage from "./pages/parent/ParentPostsPage";
-import ParentApplicationsPage from "./pages/parent/ParentApplicationsPage";
-import ParentDemoRequestsPage from "./pages/parent/ParentDemoRequestsPage";
-import ParentSearchPage from "./pages/parent/ParentSearchPage";
-import ParentMessagesPage from "./pages/parent/ParentMessagesPage";
 import TeacherDashboardPage from "./pages/teacher/TeacherDashboardPage";
+import TeacherProfilePage from "./pages/teacher/TeacherProfilePage";
 import TeacherApplicationsPage from "./pages/teacher/TeacherApplicationsPage";
 import TeacherDemoRequestsPage from "./pages/teacher/TeacherDemoRequestsPage";
 import TeacherPaymentsPage from "./pages/teacher/TeacherPaymentsPage";
@@ -28,6 +21,10 @@ import PendingPostsPage from "./pages/admin/PendingPostsPage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import TeacherApprovalPage from "./pages/admin/TeacherApprovalPage";
 import AnalyticsPage from "./pages/admin/AnalyticsPage";
+import AdminCreatePostPage from "./pages/admin/AdminCreatePostPage";
+import AdminPostsPage from "./pages/admin/AdminPostsPage";
+import AdminTeacherDetailsPage from "./pages/admin/AdminTeacherDetailsPage";
+import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -48,43 +45,17 @@ const App = () => {
       <Route path="/teachers" element={<TeachersPage />} />
       <Route path="/vacancies" element={<VacanciesPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register/parent" element={<RegisterParentPage />} />
       <Route path="/register/teacher" element={<RegisterTeacherPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route
-            path="/parent"
-            element={<ProtectedRoute roles={["Parent"]}><ParentDashboardPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/create-post"
-            element={<ProtectedRoute roles={["Parent"]}><CreatePostPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/posts"
-            element={<ProtectedRoute roles={["Parent"]}><ParentPostsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/applications"
-            element={<ProtectedRoute roles={["Parent"]}><ParentApplicationsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/demo"
-            element={<ProtectedRoute roles={["Parent"]}><ParentDemoRequestsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/search"
-            element={<ProtectedRoute roles={["Parent"]}><ParentSearchPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/parent/messages"
-            element={<ProtectedRoute roles={["Parent"]}><ParentMessagesPage /></ProtectedRoute>}
-          />
-
-          <Route
             path="/teacher"
             element={<ProtectedRoute roles={["Teacher"]}><TeacherDashboardPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/teacher/profile"
+            element={<ProtectedRoute roles={["Teacher"]}><TeacherProfilePage /></ProtectedRoute>}
           />
           <Route
             path="/teacher/applications"
@@ -108,6 +79,14 @@ const App = () => {
             element={<ProtectedRoute roles={["Admin"]}><AdminDashboardPage /></ProtectedRoute>}
           />
           <Route
+            path="/admin/create-post"
+            element={<ProtectedRoute roles={["Admin"]}><AdminCreatePostPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/posts"
+            element={<ProtectedRoute roles={["Admin"]}><AdminPostsPage /></ProtectedRoute>}
+          />
+          <Route
             path="/admin/settings"
             element={<ProtectedRoute roles={["Admin"]}><AdminSettingsPage /></ProtectedRoute>}
           />
@@ -124,8 +103,16 @@ const App = () => {
             element={<ProtectedRoute roles={["Admin"]}><TeacherApprovalPage /></ProtectedRoute>}
           />
           <Route
+            path="/admin/teachers/:id"
+            element={<ProtectedRoute roles={["Admin"]}><AdminTeacherDetailsPage /></ProtectedRoute>}
+          />
+          <Route
             path="/admin/analytics"
             element={<ProtectedRoute roles={["Admin"]}><AnalyticsPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/applications"
+            element={<ProtectedRoute roles={["Admin"]}><AdminApplicationsPage /></ProtectedRoute>}
           />
         </Route>
       </Route>
@@ -136,4 +123,3 @@ const App = () => {
 };
 
 export default App;
-

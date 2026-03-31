@@ -22,7 +22,6 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<TuitionPlatformDbContext>());
 
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
         services.AddScoped<ITeacherProfileRepository, TeacherProfileRepository>();
         services.AddScoped<ITuitionPostRepository, TuitionPostRepository>();
         services.AddScoped<ITeacherApplicationRepository, TeacherApplicationRepository>();

@@ -7,8 +7,6 @@ public class TuitionPost : AuditableEntity
 {
     public Guid CreatedByUserId { get; set; }
 
-    public Guid? ParentProfileId { get; set; }
-
     public string Subject { get; set; } = string.Empty;
 
     public string ClassLevel { get; set; } = string.Empty;
@@ -35,10 +33,7 @@ public class TuitionPost : AuditableEntity
 
     public DateTime? ApprovedAtUtc { get; set; }
 
-    public ParentProfile? ParentProfile { get; set; }
-
     public ICollection<TeacherApplication> Applications { get; set; } = new List<TeacherApplication>();
 
     public ICollection<DemoRequest> DemoRequests { get; set; } = new List<DemoRequest>();
 }
-

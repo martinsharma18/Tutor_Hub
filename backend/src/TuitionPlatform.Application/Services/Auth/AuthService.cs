@@ -13,7 +13,6 @@ namespace TuitionPlatform.Application.Services.Auth;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
-    private readonly IParentProfileRepository _parentProfileRepository;
     private readonly ITeacherProfileRepository _teacherProfileRepository;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
@@ -22,7 +21,6 @@ public class AuthService : IAuthService
 
     public AuthService(
         IUserRepository userRepository,
-        IParentProfileRepository parentProfileRepository,
         ITeacherProfileRepository teacherProfileRepository,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
@@ -30,45 +28,11 @@ public class AuthService : IAuthService
         IMapper mapper)
     {
         _userRepository = userRepository;
-        _parentProfileRepository = parentProfileRepository;
         _teacherProfileRepository = teacherProfileRepository;
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
-    }
-
-    public async Task<AuthResponse> RegisterParentAsync(RegisterParentRequest request, CancellationToken cancellationToken = default)
-    {
-        await EnsureEmailIsUnique(request.Email, cancellationToken);
-
-        var user = new User
-        {
-            Email = request.Email.ToLowerInvariant(),
-            FullName = request.FullName,
-            PhoneNumber = request.PhoneNumber,
-            Role = UserRole.Parent,
-            PasswordHash = _passwordHasher.Hash(request.Password),
-            IsActive = true,
-            EmailVerified = false
-        };
-
-        await _userRepository.AddAsync(user, cancellationToken);
-
-        var profile = new ParentProfile
-        {
-            User = user,
-            City = request.City,
-            Area = request.Area,
-            Latitude = request.Latitude,
-            Longitude = request.Longitude
-        };
-
-        await _parentProfileRepository.AddAsync(profile, cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return await BuildAuthResponseAsync(user, cancellationToken);
     }
 
     public async Task<AuthResponse> RegisterTeacherAsync(RegisterTeacherRequest request, CancellationToken cancellationToken = default)
@@ -93,6 +57,10 @@ public class AuthService : IAuthService
             User = user,
             Bio = request.Bio,
             Qualification = request.Qualification,
+            University = request.University,
+            GraduationYear = request.GraduationYear,
+            Gender = request.Gender,
+            NationalId = request.NationalId,
             ExperienceSummary = request.ExperienceSummary,
             YearsOfExperience = request.YearsOfExperience,
             Subjects = request.Subjects,
@@ -103,6 +71,7 @@ public class AuthService : IAuthService
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             HourlyRate = request.HourlyRate,
+            CvUrl = request.CvUrl,
             IsApproved = false
         };
 
@@ -146,13 +115,13 @@ public class AuthService : IAuthService
         var refreshToken = await _tokenService.ValidateRefreshTokenAsync(user, request.RefreshToken, cancellationToken)
                             ?? throw new ForbiddenException("Invalid refresh token.");
 
- (string AccessToken, DateTime ExpiresAtUtc) token = _tokenService.CreateAccessToken(user);
+        var (AccessToken, ExpiresAtUtc) = _tokenService.CreateAccessToken(user);
         var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(user, cancellationToken);
 
         return new AuthResponse
         {
-            AccessToken = token.AccessToken,
-            ExpiresAtUtc = token.ExpiresAtUtc,
+            AccessToken = AccessToken,
+            ExpiresAtUtc = ExpiresAtUtc,
             RefreshToken = newRefreshToken,
             User = _mapper.Map<UserDto>(user)
         };
@@ -184,4 +153,3 @@ public class AuthService : IAuthService
         };
     }
 }
-

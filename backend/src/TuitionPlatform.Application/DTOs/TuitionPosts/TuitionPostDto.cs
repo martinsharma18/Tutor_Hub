@@ -3,7 +3,6 @@ namespace TuitionPlatform.Application.DTOs.TuitionPosts;
 public class TuitionPostDto
 {
     public Guid Id { get; set; }
-    public Guid? ParentProfileId { get; set; }
     public string Subject { get; set; } = string.Empty;
     public string ClassLevel { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;

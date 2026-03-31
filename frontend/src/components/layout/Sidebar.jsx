@@ -1,19 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { Home, PlusCircle, Files, Users, Calendar, Search, MessageSquare, CreditCard, Settings, Shield, BarChart3, UserCheck, Ban } from "lucide-react";
+import { Home, PlusCircle, Files, Users, Calendar, Search, MessageSquare, CreditCard, Settings, Shield, UserCheck, User, Briefcase } from "lucide-react";
 import clsx from "clsx";
-
-const parentNav = [
-  { to: "/parent", label: "Overview", icon: Home },
-  { to: "/parent/create-post", label: "Create Post", icon: PlusCircle },
-  { to: "/parent/posts", label: "My Posts", icon: Files },
-  { to: "/parent/applications", label: "Applications", icon: Users },
-  { to: "/parent/demo", label: "Demo Requests", icon: Calendar },
-  { to: "/parent/search", label: "Search Teachers", icon: Search },
-  { to: "/parent/messages", label: "Messages", icon: MessageSquare },
-];
 
 const teacherNav = [
   { to: "/teacher", label: "Overview", icon: Home },
+  { to: "/teacher/profile", label: "My Profile", icon: User },
   { to: "/teacher/applications", label: "My Applications", icon: Files },
   { to: "/teacher/demo", label: "Demo Requests", icon: Calendar },
   { to: "/teacher/payments", label: "Payments", icon: CreditCard },
@@ -22,16 +13,16 @@ const teacherNav = [
 
 const adminNav = [
   { to: "/admin", label: "Dashboard", icon: Home },
-  { to: "/admin/pending-posts", label: "Pending Posts", icon: Files },
+  { to: "/admin/create-post", label: "Post Vacancy", icon: PlusCircle },
+  { to: "/admin/posts", label: "Manage Vacancies", icon: Briefcase },
+  { to: "/admin/applications", label: "Applications", icon: MessageSquare },
+  { to: "/admin/teachers", label: "Teachers", icon: UserCheck },
   { to: "/admin/users", label: "User Management", icon: Users },
-  { to: "/admin/teachers", label: "Teacher Approval", icon: UserCheck },
-  { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const Sidebar = ({ role }) => {
-  const navItems =
-    role === "Parent" ? parentNav : role === "Teacher" ? teacherNav : adminNav;
+  const navItems = role === "Teacher" ? teacherNav : adminNav;
 
   return (
     <aside className="hidden lg:flex w-72 flex-col border-r border-orange-200 bg-gradient-to-b from-white to-orange-50/30 backdrop-blur-xl shadow-lg">
@@ -90,4 +81,3 @@ const Sidebar = ({ role }) => {
 };
 
 export default Sidebar;
-

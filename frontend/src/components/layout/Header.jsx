@@ -20,7 +20,6 @@ const Header = () => {
 
   const navItems = [
     { label: "Home", path: "/" },
-    { label: "Find Teachers", path: "/teachers" },
     { label: "Find Vacancies", path: "/vacancies" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
@@ -79,7 +78,7 @@ const Header = () => {
                   Login
                 </Link>
                 <Link
-                  to="/register/parent"
+                  to="/register/teacher"
                   className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   Sign Up
@@ -130,13 +129,13 @@ const Header = () => {
                   >
                     Login
                   </Link>
-                  <Link
-                    to="/register/parent"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block mt-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl text-center"
-                  >
-                    Sign Up
-                  </Link>
+                <Link
+                  to="/register/teacher"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block mt-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl text-center"
+                >
+                  Sign Up
+                </Link>
                 </>
               )}
             </div>

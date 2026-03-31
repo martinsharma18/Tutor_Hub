@@ -21,6 +21,12 @@ export const postsApi = {
         params: { page: params.page ?? 1, pageSize: params.pageSize ?? 10 },
       })
       .then((res) => res.data),
+  allPosts: (params = {}) =>
+    apiClient
+      .get("/tuition-posts/all", {
+        params: { page: params.page ?? 1, pageSize: params.pageSize ?? 10 },
+      })
+      .then((res) => res.data),
   approve: (postId) =>
     apiClient.post(`/tuition-posts/${postId}/approve`).then((res) => res.data),
   updateStatus: (postId, status) =>

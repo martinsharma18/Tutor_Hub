@@ -9,3 +9,15 @@ D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Doma
 D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\refint\TuitionPlatform.Domain.dll
 D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.pdb
 D:\home\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\ref\TuitionPlatform.Domain.dll
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.deps.json
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.dll
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\bin\Debug\net8.0\TuitionPlatform.Domain.pdb
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.AssemblyInfoInputs.cache
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.AssemblyInfo.cs
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.csproj.CoreCompileInputs.cache
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.sourcelink.json
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.dll
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\refint\TuitionPlatform.Domain.dll
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\TuitionPlatform.Domain.pdb
+D:\Tutor_Hub\backend\src\TuitionPlatform.Domain\obj\Debug\net8.0\ref\TuitionPlatform.Domain.dll

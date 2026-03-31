@@ -11,6 +11,14 @@ public class TeacherProfile : AuditableEntity
 
     public string Qualification { get; set; } = string.Empty;
 
+    public string? University { get; set; }
+
+    public string? GraduationYear { get; set; }
+
+    public string? Gender { get; set; }
+
+    public string? NationalId { get; set; }
+
     public string ExperienceSummary { get; set; } = string.Empty;
 
     public int YearsOfExperience { get; set; }
@@ -34,6 +42,8 @@ public class TeacherProfile : AuditableEntity
     public bool IsFeatured { get; set; }
 
     public decimal? HourlyRate { get; set; }
+    
+    public string? CvUrl { get; set; }
 
     public User User { get; set; } = default!;
 
@@ -41,4 +51,3 @@ public class TeacherProfile : AuditableEntity
 
     public ICollection<DemoRequest> DemoRequests { get; set; } = new List<DemoRequest>();
 }
-

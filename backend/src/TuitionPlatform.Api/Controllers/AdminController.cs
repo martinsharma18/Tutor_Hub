@@ -46,11 +46,53 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("teachers/{teacherProfileId:guid}")]
+    public async Task<ActionResult<AdminTeacherDetailsDto>> GetTeacherDetails(Guid teacherProfileId, CancellationToken cancellationToken)
+    {
+        var result = await _adminService.GetTeacherDetailsAsync(teacherProfileId, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost("teachers/feature")]
     public async Task<ActionResult<TeacherProfileDto>> FeatureTeacher(FeaturedTeacherRequest request, CancellationToken cancellationToken)
     {
         var result = await _adminService.FeatureTeacherAsync(request, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpGet("users")]
+    public async Task<ActionResult<List<UserDto>>> GetAllUsers(CancellationToken cancellationToken)
+    {
+        var result = await _adminService.GetAllUsersAsync(cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("applications")]
+    public async Task<ActionResult<List<TeacherApplicationDto>>> ListApplications(CancellationToken cancellationToken)
+    {
+        var result = await _adminService.GetAllApplicationsAsync(cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPatch("users/{userId:guid}/status")]
+    public async Task<ActionResult<UserDto>> UpdateUserStatus(Guid userId, [FromBody] bool isActive, CancellationToken cancellationToken)
+    {
+        var result = await _adminService.UpdateUserStatusAsync(userId, isActive, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPatch("users/{userId:guid}/role")]
+    public async Task<ActionResult<UserDto>> UpdateUserRole(Guid userId, [FromBody] string role, CancellationToken cancellationToken)
+    {
+        var result = await _adminService.UpdateUserRoleAsync(userId, role, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpDelete("teachers/{teacherProfileId:guid}")]
+    public async Task<ActionResult> DeleteTeacher(Guid teacherProfileId, CancellationToken cancellationToken)
+    {
+        await _adminService.RemoveTeacherAsync(teacherProfileId, cancellationToken);
+        return NoContent();
     }
 }
 

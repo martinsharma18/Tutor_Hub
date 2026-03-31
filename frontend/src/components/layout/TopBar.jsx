@@ -9,7 +9,7 @@ const TopBar = ({ fullName, role }) => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate("/login");
+    navigate("/");
   };
 
   return (

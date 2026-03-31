@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TuitionPlatform.Infrastructure.Persistence.Migrations
+namespace TuitionPlatform.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class i : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,122 +52,11 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    EmailVerified = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ParentProfiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    City = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    Area = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ParentProfiles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ParentProfiles_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RefreshTokens",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RefreshTokens_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TeacherProfiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Qualification = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExperienceSummary = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    YearsOfExperience = table.Column<int>(type: "int", nullable: false),
-                    Subjects = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Classes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    PreferredMode = table.Column<int>(type: "int", nullable: false),
-                    City = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    Area = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: true),
-                    Longitude = table.Column<double>(type: "float", nullable: true),
-                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
-                    IsFeatured = table.Column<bool>(type: "bit", nullable: false),
-                    HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TeacherProfiles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TeacherProfiles_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TuitionPosts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Subject = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ClassLevel = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
                     City = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
@@ -190,25 +79,20 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TuitionPosts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TuitionPosts_ParentProfiles_ParentProfileId",
-                        column: x => x.ParentProfileId,
-                        principalTable: "ParentProfiles",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "DemoRequests",
+                name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TeacherProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TuitionPostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SelectedDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    SelectedTime = table.Column<TimeOnly>(type: "time", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    EmailVerified = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -217,25 +101,7 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DemoRequests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DemoRequests_ParentProfiles_ParentProfileId",
-                        column: x => x.ParentProfileId,
-                        principalTable: "ParentProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_DemoRequests_TeacherProfiles_TeacherProfileId",
-                        column: x => x.TeacherProfileId,
-                        principalTable: "TeacherProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_DemoRequests_TuitionPosts_TuitionPostId",
-                        column: x => x.TuitionPostId,
-                        principalTable: "TuitionPosts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -281,6 +147,112 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TeacherProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Bio = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    Qualification = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    University = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GraduationYear = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NationalId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExperienceSummary = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    YearsOfExperience = table.Column<int>(type: "int", nullable: false),
+                    Subjects = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Classes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    PreferredMode = table.Column<int>(type: "int", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Area = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
+                    Latitude = table.Column<double>(type: "float", nullable: true),
+                    Longitude = table.Column<double>(type: "float", nullable: true),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
+                    IsFeatured = table.Column<bool>(type: "bit", nullable: false),
+                    HourlyRate = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    CvUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TeacherProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TeacherProfiles_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DemoRequests",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TeacherProfileId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TuitionPostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SelectedDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    SelectedTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DemoRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DemoRequests_TeacherProfiles_TeacherProfileId",
+                        column: x => x.TeacherProfileId,
+                        principalTable: "TeacherProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DemoRequests_TuitionPosts_TuitionPostId",
+                        column: x => x.TuitionPostId,
+                        principalTable: "TuitionPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_DemoRequests_Users_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TeacherApplications",
                 columns: table => new
                 {
@@ -315,9 +287,9 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DemoRequests_ParentProfileId",
+                name: "IX_DemoRequests_ParentId",
                 table: "DemoRequests",
-                column: "ParentProfileId");
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DemoRequests_TeacherProfileId",
@@ -333,12 +305,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 name: "IX_Messages_ConversationKey",
                 table: "Messages",
                 column: "ConversationKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ParentProfiles_UserId",
-                table: "ParentProfiles",
-                column: "UserId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_ParentId",
@@ -378,11 +344,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TuitionPosts_ParentProfileId",
-                table: "TuitionPosts",
-                column: "ParentProfileId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
@@ -415,9 +376,6 @@ namespace TuitionPlatform.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "TuitionPosts");
-
-            migrationBuilder.DropTable(
-                name: "ParentProfiles");
 
             migrationBuilder.DropTable(
                 name: "Users");

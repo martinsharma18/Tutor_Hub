@@ -16,14 +16,6 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("parent/register")]
-    [AllowAnonymous]
-    public async Task<ActionResult<AuthResponse>> RegisterParent(RegisterParentRequest request, CancellationToken cancellationToken)
-    {
-        var response = await _authService.RegisterParentAsync(request, cancellationToken);
-        return Ok(response);
-    }
-
     [HttpPost("teacher/register")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> RegisterTeacher(RegisterTeacherRequest request, CancellationToken cancellationToken)

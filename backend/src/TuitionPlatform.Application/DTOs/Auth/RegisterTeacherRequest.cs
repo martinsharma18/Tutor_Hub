@@ -12,6 +12,14 @@ public class RegisterTeacherRequest
 
     public string Qualification { get; set; } = string.Empty;
 
+    public string? University { get; set; }
+
+    public string? GraduationYear { get; set; }
+
+    public string? Gender { get; set; }
+
+    public string? NationalId { get; set; }
+
     public string ExperienceSummary { get; set; } = string.Empty;
 
     public int YearsOfExperience { get; set; }
@@ -33,5 +41,7 @@ public class RegisterTeacherRequest
     public double? Longitude { get; set; }
 
     public decimal? HourlyRate { get; set; }
+
+    public string? CvUrl { get; set; }
 }
 

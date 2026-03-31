@@ -7,7 +7,7 @@ public class DemoRequest : AuditableEntity
 {
     public Guid TeacherProfileId { get; set; }
 
-    public Guid ParentProfileId { get; set; }
+    public Guid ParentId { get; set; }
 
     public Guid TuitionPostId { get; set; }
 
@@ -21,7 +21,7 @@ public class DemoRequest : AuditableEntity
 
     public TeacherProfile TeacherProfile { get; set; } = default!;
 
-    public ParentProfile ParentProfile { get; set; } = default!;
+    public User Parent { get; set; } = default!;
 
     public TuitionPost TuitionPost { get; set; } = default!;
 }

@@ -12,7 +12,7 @@ public class TuitionPostRepository : GenericRepository<TuitionPost>, ITuitionPos
     }
 
     public override Task<TuitionPost?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => DbContext.TuitionPosts.Include(p => p.ParentProfile).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        => DbContext.TuitionPosts.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
     public async Task<PagedTuitionPostResult> SearchAsync(
         TuitionPostStatus? status,
@@ -27,8 +27,14 @@ public class TuitionPostRepository : GenericRepository<TuitionPost>, ITuitionPos
 
         if (status.HasValue)
         {
-            var targetStatus = status.Value;
-            query = query.Where(p => p.Status == targetStatus);
+            if (status.Value == TuitionPostStatus.Approved)
+            {
+                query = query.Where(p => p.Status == TuitionPostStatus.Approved || p.Status == TuitionPostStatus.Open);
+            }
+            else
+            {
+                query = query.Where(p => p.Status == status.Value);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(city))

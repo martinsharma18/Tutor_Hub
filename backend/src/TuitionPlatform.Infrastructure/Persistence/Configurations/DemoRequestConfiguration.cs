@@ -16,9 +16,9 @@ public class DemoRequestConfiguration : IEntityTypeConfiguration<DemoRequest>
             .HasForeignKey(d => d.TeacherProfileId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(d => d.ParentProfile)
-            .WithMany(p => p.DemoRequests)
-            .HasForeignKey(d => d.ParentProfileId)
+        builder.HasOne(d => d.Parent)
+            .WithMany()
+            .HasForeignKey(d => d.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(d => d.TuitionPost)

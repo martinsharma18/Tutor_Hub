@@ -14,5 +14,17 @@ public interface IAdminService
     Task<TeacherProfileDto> ApproveTeacherAsync(Guid teacherProfileId, CancellationToken cancellationToken = default);
 
     Task<TeacherProfileDto> FeatureTeacherAsync(FeaturedTeacherRequest request, CancellationToken cancellationToken = default);
+
+    Task<AdminTeacherDetailsDto> GetTeacherDetailsAsync(Guid teacherProfileId, CancellationToken cancellationToken = default);
+
+    Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default);
+
+    Task<UserDto> UpdateUserStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default);
+
+    Task<UserDto> UpdateUserRoleAsync(Guid userId, string role, CancellationToken cancellationToken = default);
+
+    Task<List<TeacherApplicationDto>> GetAllApplicationsAsync(CancellationToken cancellationToken = default);
+
+    Task RemoveTeacherAsync(Guid teacherProfileId, CancellationToken cancellationToken = default);
 }
 

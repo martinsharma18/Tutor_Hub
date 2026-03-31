@@ -73,15 +73,15 @@ if (app.Environment.IsDevelopment())
             
             var passwordHasher = scope.ServiceProvider.GetRequiredService<TuitionPlatform.Application.Interfaces.Services.IPasswordHasher>();
             
-            var adminExists = await dbContext.Users.AnyAsync(u => u.Email == "admin@tuitionplatform.com");
+            var adminExists = await dbContext.Users.AnyAsync(u => u.Email == "martinsharma18@gmail.com");
             if (!adminExists)
             {
                 var adminUser = new TuitionPlatform.Domain.Entities.User
                 {
                     Id = Guid.NewGuid(),
-                    Email = "admin@tuitionplatform.com",
+                    Email = "martinsharma18@gmail.com",
                     FullName = "System Administrator",
-                    PasswordHash = passwordHasher.Hash("Admin123!"),
+                    PasswordHash = passwordHasher.Hash("Martin#123"),
                     Role = TuitionPlatform.Domain.Enums.UserRole.Admin,
                     IsActive = true,
                     EmailVerified = true,
@@ -91,8 +91,8 @@ if (app.Environment.IsDevelopment())
                 dbContext.Users.Add(adminUser);
                 await dbContext.SaveChangesAsync();
                 Console.WriteLine("✅ Default admin user created!");
-                Console.WriteLine("   Email: admin@tuitionplatform.com");
-                Console.WriteLine("   Password: Admin123!");
+                Console.WriteLine("   Email: martinsharma18@gmail.com");
+                Console.WriteLine("   Password: Martin#123");
             }
         }
     }

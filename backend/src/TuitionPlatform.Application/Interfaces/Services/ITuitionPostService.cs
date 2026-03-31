@@ -16,5 +16,7 @@ public interface ITuitionPostService
     Task<PagedResult<TuitionPostDto>> GetOpenPostsAsync(PagedRequest request, CancellationToken cancellationToken = default);
 
     Task<PagedResult<TuitionPostDto>> GetPendingPostsAsync(PagedRequest request, CancellationToken cancellationToken = default);
+
+    Task<PagedResult<TuitionPostDto>> GetAllPostsAsync(PagedRequest request, CancellationToken cancellationToken = default);
 }
 
