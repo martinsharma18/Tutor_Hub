@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: tutor-hub-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Jwt__Issuer
+        value: TuitionPlatform
+      - key: Jwt__Audience
+        value: TuitionPlatform
+      - key: Jwt__SecretKey
+        generateValue: true
+      - key: Jwt__ExpiryMinutes
+        value: 60
+      - key: Jwt__RefreshTokenDays
+        value: 30
