@@ -16,8 +16,9 @@ public static class DependencyInjection
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
+        var connectionString = GetPostgresConnectionString(configuration);
         services.AddDbContext<TuitionPlatformDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(connectionString));
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<TuitionPlatformDbContext>());
 
@@ -35,6 +36,30 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
 
         return services;
+    }
+
+    private static string GetPostgresConnectionString(IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? configuration["DATABASE_URL"];
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("A PostgreSQL connection string is required.");
+        }
+
+        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var databaseUrl))
+        {
+            return connectionString;
+        }
+
+        var userInfo = databaseUrl.UserInfo.Split(':', 2);
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+        var database = databaseUrl.AbsolutePath.TrimStart('/');
+        var port = databaseUrl.IsDefaultPort ? 5432 : databaseUrl.Port;
+
+        return $"Host={databaseUrl.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     }
 }
 

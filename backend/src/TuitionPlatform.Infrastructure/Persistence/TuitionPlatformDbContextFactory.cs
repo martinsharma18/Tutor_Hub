@@ -24,7 +24,7 @@ public class TuitionPlatformDbContextFactory : IDesignTimeDbContextFactory<Tuiti
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<TuitionPlatformDbContext>();
-        optionsBuilder.UseSqlServer(
+        optionsBuilder.UseNpgsql(
             configuration.GetConnectionString("DefaultConnection"));
 
         return new TuitionPlatformDbContext(optionsBuilder.Options);

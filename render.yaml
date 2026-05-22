@@ -10,7 +10,9 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: ConnectionStrings__DefaultConnection
-        sync: false
+        fromDatabase:
+          name: tutor-hub-db
+          property: connectionString
       - key: Jwt__Issuer
         value: TuitionPlatform
       - key: Jwt__Audience
@@ -21,3 +23,9 @@ services:
         value: 60
       - key: Jwt__RefreshTokenDays
         value: 30
+
+databases:
+  - name: tutor-hub-db
+    databaseName: tutor_hub
+    user: tutor_hub
+    plan: free

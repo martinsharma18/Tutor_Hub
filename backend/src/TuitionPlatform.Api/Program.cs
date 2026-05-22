@@ -59,18 +59,25 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Seed admin user in development
+try
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<TuitionPlatformDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Warning: Could not apply database migrations: {ex.Message}");
+    throw;
+}
+
 if (app.Environment.IsDevelopment())
 {
     try
     {
         using (var scope = app.Services.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TuitionPlatform.Infrastructure.Persistence.TuitionPlatformDbContext>();
-            
-            // Ensure database is created
-            await dbContext.Database.EnsureCreatedAsync();
-            
+            var dbContext = scope.ServiceProvider.GetRequiredService<TuitionPlatformDbContext>();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<TuitionPlatform.Application.Interfaces.Services.IPasswordHasher>();
             
             var adminExists = await dbContext.Users.AnyAsync(u => u.Email == "martinsharma18@gmail.com");
