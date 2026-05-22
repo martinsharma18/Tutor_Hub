@@ -13,7 +13,7 @@ const DashboardLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 text-slate-900 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 text-slate-900 flex flex-col overflow-hidden">
       <div className="flex flex-1 overflow-hidden">
         <Sidebar role={user.role} />
         <div className="flex-1 flex flex-col overflow-hidden">
