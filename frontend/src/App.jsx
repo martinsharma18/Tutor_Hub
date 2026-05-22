@@ -4,6 +4,8 @@ import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./store/hooks";
 import { initializeAuth } from "./store/authSlice";
 import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 import TeachersPage from "./pages/TeachersPage";
 import VacanciesPage from "./pages/VacanciesPage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -44,6 +46,8 @@ const App = () => {
     <>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/teachers" element={<TeachersPage />} />
         <Route path="/vacancies" element={<VacanciesPage />} />
         <Route path="/login" element={<LoginPage />} />
