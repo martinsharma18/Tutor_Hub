@@ -115,14 +115,17 @@ const RegisterTeacherPage = () => {
     } text-slate-800 placeholder-slate-400`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-slate-50 flex flex-col">
+    <div className="min-h-screen relative bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 flex flex-col overflow-hidden">
+      {/* Background Blobs */}
+      <div className="absolute top-[-80px] left-[-100px] w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 z-0 pointer-events-none"></div>
+      <div className="absolute bottom-[-60px] right-[-80px] w-80 h-80 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 z-0 pointer-events-none"></div>
       {/* Header */}
       <div className="py-6 px-6 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur">
         <Link to="/" className="flex items-center gap-2 text-xl font-bold text-slate-900">
-          <div className="p-1.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
+          <div className="p-1.5 bg-gradient-to-br from-orange-600 to-orange-800 rounded-lg">
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
-          TuitionHub
+          Best Tuitions
         </Link>
         <p className="text-sm text-slate-500">
           Already a member?{" "}
@@ -130,7 +133,7 @@ const RegisterTeacherPage = () => {
         </p>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-10">
+      <div className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-3xl">
           {/* Page Title */}
           <div className="text-center mb-8">
@@ -171,7 +174,7 @@ const RegisterTeacherPage = () => {
 
           {/* Form Card */}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 p-8 md:p-10">
+            <div className="glass-panel relative z-10 rounded-3xl p-8 md:p-10">
 
               {/* ── Step 1: Personal Info ── */}
               {currentStep === 1 && (
@@ -452,7 +455,7 @@ const RegisterTeacherPage = () => {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95"
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-orange-800 text-white font-semibold hover:from-orange-700 hover:to-orange-900 shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95"
                 >
                   Next
                   <ChevronRight className="h-5 w-5" />
@@ -461,7 +464,7 @@ const RegisterTeacherPage = () => {
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-orange-800 text-white font-bold hover:from-orange-700 hover:to-orange-900 shadow-lg shadow-orange-200 transition-all hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {mutation.isPending ? (
                     <>

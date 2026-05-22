@@ -54,13 +54,13 @@ const AboutPage = () => {
               <div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-bold mb-6">
                   <GraduationCap className="h-4 w-4" />
-                  About TuitionHub
+                  About Best Tuitions
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6">
                   A focused platform for tuition opportunities.
                 </h1>
                 <p className="text-lg md:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl">
-                  TuitionHub connects qualified teachers with verified tuition vacancies, keeping discovery,
+                  Best Tuitions connects qualified teachers with verified tuition vacancies, keeping discovery,
                   applications, demo requests, messaging, and payment tracking in one practical workspace.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-10">

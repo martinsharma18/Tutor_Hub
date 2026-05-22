@@ -16,7 +16,7 @@ const contactMethods = [
   {
     icon: Mail,
     label: "Email",
-    value: "support@tuitionhub.com",
+    value: "support@besttuitions.com",
     detail: "For account, vacancy, and platform questions",
   },
   {
@@ -52,7 +52,7 @@ const ContactPage = () => {
               <div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-bold mb-6">
                   <MessageCircle className="h-4 w-4" />
-                  Contact TuitionHub
+                  Contact Best Tuitions
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6">
                   Get help with your tuition workflow.
@@ -117,7 +117,7 @@ const ContactPage = () => {
                     className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none resize-none"
                   />
                   <a
-                    href="mailto:support@tuitionhub.com"
+                    href="mailto:support@besttuitions.com"
                     className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg"
                   >
                     Continue by Email <ArrowRight className="h-5 w-5" />

@@ -71,7 +71,7 @@ const LoginPage = () => {
             <div className="p-2 bg-orange-500 rounded-xl group-hover:scale-110 transition-transform">
               <GraduationCap className="h-6 w-6" />
             </div>
-            TuitionHub
+            Best Tuitions
           </Link>
 
           <div className="max-w-md animate-slide-up">
@@ -102,7 +102,7 @@ const LoginPage = () => {
           </div>
 
           <div className="text-slate-400 text-sm">
-            © 2026 TuitionHub. All rights reserved.
+            © 2026 Best Tuitions. All rights reserved.
           </div>
         </div>
       </div>

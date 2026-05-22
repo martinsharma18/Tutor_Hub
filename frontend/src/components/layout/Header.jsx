@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { GraduationCap, Menu, X } from "lucide-react";
 import { useAppSelector } from "../../store/hooks";
 import { selectCurrentUser } from "../../store/authSlice";
+import logo from "../../best tuitions.png";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,7 +30,7 @@ const Header = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg"
+          ? "glass bg-white/70 shadow-sm"
           : "bg-transparent"
       }`}
     >
@@ -40,10 +41,10 @@ const Header = () => {
             to="/"
             className="flex items-center gap-2 text-2xl font-bold text-slate-900 hover:text-orange-600 transition-colors"
           >
-            <div className="p-2 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl text-white">
-              <GraduationCap className="h-6 w-6" />
+            <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-800 rounded-xl shadow-md">
+              <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain" />
             </div>
-            <span className="hidden sm:inline">TuitionHub</span>
+            <span className="hidden sm:inline">Best Tuitions</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -79,7 +80,7 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/register/teacher"
-                  className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+                  className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-800 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-orange-900 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   Sign Up
                 </Link>
@@ -132,7 +133,7 @@ const Header = () => {
                 <Link
                   to="/register/teacher"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block mt-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl text-center"
+                  className="block mt-2 px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-800 text-white font-semibold rounded-xl text-center"
                 >
                   Sign Up
                 </Link>
