@@ -11,7 +11,7 @@ const VacancyCard = ({
   return (
     <div 
       className={`
-        group relative bg-white rounded-2xl border-2 border-orange-100 
+        group relative glass rounded-2xl border border-white/40 
         p-6 shadow-md hover:shadow-2xl hover:border-orange-300 
         transition-all duration-300 transform hover:-translate-y-2 
         card-hover animate-fade-in ${className}
@@ -89,9 +89,9 @@ const VacancyCard = ({
           {onApply && (
             <button
               onClick={() => onApply(post)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 
+              className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-800 
                        text-white font-semibold shadow-md hover:shadow-lg 
-                       hover:from-orange-600 hover:to-orange-700 
+                       hover:from-orange-700 hover:to-orange-900 
                        transition-all duration-200 transform hover:scale-105 active:scale-95"
             >
               Apply Now

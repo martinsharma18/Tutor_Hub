@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Home, PlusCircle, Files, Users, Calendar, Search, MessageSquare, CreditCard, Settings, Shield, UserCheck, User, Briefcase } from "lucide-react";
 import clsx from "clsx";
+import logo from "../../best tuitions.png";
 
 const teacherNav = [
   { to: "/teacher", label: "Overview", icon: Home },
@@ -25,15 +26,15 @@ const Sidebar = ({ role }) => {
   const navItems = role === "Teacher" ? teacherNav : adminNav;
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-orange-200 bg-gradient-to-b from-white to-orange-50/30 backdrop-blur-xl shadow-lg">
+    <aside className="hidden lg:flex w-72 flex-col border-r border-white/50 glass shadow-xl">
       <div className="p-6 border-b border-orange-200 bg-gradient-to-r from-orange-500 to-orange-600">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-            <Shield className="h-5 w-5 text-white" />
+          <div className="p-1 bg-white/20 rounded-lg backdrop-blur-sm">
+            <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-widest text-orange-100 font-bold">Home Tuition</p>
-            <p className="text-sm text-white font-semibold">Platform</p>
+            <p className="text-sm uppercase tracking-widest text-orange-100 font-bold">Best</p>
+            <p className="text-lg text-white font-semibold">Tuitions</p>
           </div>
         </div>
         <h2 className="text-lg font-bold text-white mt-3 capitalize">{role.toLowerCase()} Dashboard</h2>

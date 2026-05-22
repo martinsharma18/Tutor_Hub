@@ -35,7 +35,7 @@ const Footer = () => {
               <div className="p-1.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg">
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">TuitionHub</span>
+              <span className="text-xl font-bold">Best Tuitions</span>
             </Link>
             <span className="text-slate-500 hidden sm:block">|</span>
             <p className="text-slate-400 text-sm">
