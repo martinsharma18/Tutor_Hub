@@ -16,5 +16,8 @@ public class TeacherApplicationDto
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? ShortlistedAtUtc { get; set; }
     public DateTime? HiredAtUtc { get; set; }
+    public bool IsPaymentVerified { get; set; }
+    public decimal CommissionAmount { get; set; }
+    public string? ParentPhoneNumber { get; set; }
 }
 

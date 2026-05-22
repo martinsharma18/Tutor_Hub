@@ -29,7 +29,10 @@ public class ApplicationProfile : Profile
             .ForMember(dest => dest.PostSubject, opt => opt.MapFrom(src => src.TuitionPost.Subject))
             .ForMember(dest => dest.CreatedAtUtc, opt => opt.MapFrom(src => src.CreatedAtUtc))
             .ForMember(dest => dest.ShortlistedAtUtc, opt => opt.MapFrom(src => src.ShortlistedAtUtc))
-            .ForMember(dest => dest.HiredAtUtc, opt => opt.MapFrom(src => src.HiredAtUtc));
+            .ForMember(dest => dest.HiredAtUtc, opt => opt.MapFrom(src => src.HiredAtUtc))
+            .ForMember(dest => dest.IsPaymentVerified, opt => opt.MapFrom(src => src.IsPaymentVerified))
+            .ForMember(dest => dest.CommissionAmount, opt => opt.MapFrom(src => src.TuitionPost.CommissionAmount))
+            .ForMember(dest => dest.ParentPhoneNumber, opt => opt.MapFrom(src => src.TuitionPost.ParentPhoneNumber));
 
         CreateMap<TuitionPost, TuitionPostDto>()
             .ForMember(dest => dest.Mode, opt => opt.MapFrom(src => src.Mode.ToString()))

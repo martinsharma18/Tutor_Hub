@@ -15,6 +15,7 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
     private readonly ITeacherApplicationRepository _applicationRepository;
     private readonly IAdminSettingsRepository _adminSettingsRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly ITeacherProfileRepository _teacherRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -24,6 +25,7 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         ITeacherApplicationRepository applicationRepository,
         IAdminSettingsRepository adminSettingsRepository,
         IPaymentRepository paymentRepository,
+        ITeacherProfileRepository teacherRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
@@ -32,8 +34,24 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         _applicationRepository = applicationRepository;
         _adminSettingsRepository = adminSettingsRepository;
         _paymentRepository = paymentRepository;
+        _teacherRepository = teacherRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+    }
+
+    public async Task<IReadOnlyCollection<TeacherApplicationDto>> GetMyApplicationsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var teacher = await _teacherRepository.GetByUserIdAsync(userId, cancellationToken)
+                      ?? throw new NotFoundException("Teacher profile", userId);
+
+        var applications = await _applicationRepository.GetByTeacherIdAsync(teacher.Id, cancellationToken);
+        
+        var requester = await _userRepository.GetByIdAsync(userId, cancellationToken)
+                        ?? throw new NotFoundException("User", userId);
+
+        return applications.Select(app => MapToDtoWithMasking(app, requester)).ToList();
     }
 
     public async Task<IReadOnlyCollection<TeacherApplicationDto>> GetApplicationsForPostAsync(
@@ -47,7 +65,10 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         await EnsureCanManagePostAsync(requesterId, post, cancellationToken);
 
         var applications = await _applicationRepository.GetByPostIdAsync(postId, cancellationToken);
-        return applications.Select(_mapper.Map<TeacherApplicationDto>).ToList();
+        var requester = await _userRepository.GetByIdAsync(requesterId, cancellationToken)
+                        ?? throw new NotFoundException("User", requesterId);
+
+        return applications.Select(app => MapToDtoWithMasking(app, requester)).ToList();
     }
 
     public async Task<TeacherApplicationDto> UpdateStatusAsync(
@@ -96,7 +117,7 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         _tuitionPostRepository.Update(post);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return _mapper.Map<TeacherApplicationDto>(application);
+        return MapToDtoWithMasking(application, requester);
     }
 
     private async Task HandleHireAsync(
@@ -140,6 +161,50 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         };
 
         await _paymentRepository.AddAsync(payment, cancellationToken);
+    }
+
+    public async Task<TeacherApplicationDto> VerifyPaymentAsync(
+        Guid requesterId,
+        Guid applicationId,
+        CancellationToken cancellationToken = default)
+    {
+        var requester = await _userRepository.GetByIdAsync(requesterId, cancellationToken)
+                        ?? throw new NotFoundException("User", requesterId);
+
+        if (requester.Role != UserRole.Admin)
+        {
+            throw new ForbiddenException("Only administrators can verify payments.");
+        }
+
+        var application = await _applicationRepository.GetDetailedByIdAsync(applicationId, cancellationToken)
+                          ?? throw new NotFoundException("Teacher application", applicationId);
+
+        application.IsPaymentVerified = true;
+        
+        _applicationRepository.Update(application);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return MapToDtoWithMasking(application, requester);
+    }
+
+    private TeacherApplicationDto MapToDtoWithMasking(Domain.Entities.TeacherApplication application, User requester)
+    {
+        var dto = _mapper.Map<TeacherApplicationDto>(application);
+
+        // Masking Logic
+        // 1. Admins see everything
+        // 2. The teacher who paid sees everything
+        // 3. For anyone else, mask it
+        
+        bool isAuthorized = requester.Role == UserRole.Admin || 
+                           (requester.Role == UserRole.Teacher && application.IsPaymentVerified && application.TeacherProfile.UserId == requester.Id);
+
+        if (!isAuthorized)
+        {
+            dto.ParentPhoneNumber = "********";
+        }
+
+        return dto;
     }
 
     private async Task<User> EnsureCanManagePostAsync(Guid requesterId, TuitionPost post, CancellationToken cancellationToken)

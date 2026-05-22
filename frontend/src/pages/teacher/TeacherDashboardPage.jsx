@@ -35,6 +35,11 @@ const TeacherDashboardPage = () => {
     },
   });
 
+  const { data: myApplications } = useQuery({
+    queryKey: ["teacher-applications"],
+    queryFn: teacherApi.myApplications,
+  });
+
   const stats = [
     {
       label: "Profile status",
@@ -61,7 +66,79 @@ const TeacherDashboardPage = () => {
         ))}
       </div>
 
-      <SectionCard title="Open Tuition Vacancies">
+      <SectionCard title="My Applied Tuitions">
+        {myApplications && myApplications.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            {myApplications.map((app) => (
+              <div 
+                key={app.id} 
+                className="bg-white rounded-2xl border-2 border-slate-100 p-6 shadow-sm hover:shadow-md transition-all"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-800">{app.tuitionPost.subject}</h4>
+                    <p className="text-sm text-slate-500">{app.tuitionPost.classLevel} - {app.tuitionPost.city}</p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                    app.isPaymentVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                  }`}>
+                    {app.isPaymentVerified ? "Contact Unlocked" : "Payment Pending"}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-3 border-y border-slate-50 mb-4">
+                  <div className="text-sm">
+                    <span className="text-slate-400 block uppercase text-[10px] font-bold">Budget</span>
+                    <span className="font-bold text-slate-700">${app.tuitionPost.budget}</span>
+                  </div>
+                  <div className="text-sm text-right">
+                    <span className="text-slate-400 block uppercase text-[10px] font-bold">Unlock Fee</span>
+                    <span className="font-bold text-orange-600">${app.tuitionPost.commissionAmount}</span>
+                  </div>
+                </div>
+
+                {!app.isPaymentVerified ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-500 italic">
+                      Step 1: Pay the unlock fee. <br/>
+                      Step 2: Send screenshot to Admin on WhatsApp.
+                    </p>
+                    <a 
+                      href={`https://wa.me/9779800000000?text=Hi+Admin,+I+have+applied+for+${encodeURIComponent(app.tuitionPost.subject)}+in+${app.tuitionPost.city}+ID:+${app.id}.+I+want+to+unlock+the+contact.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-600 transition-all"
+                    >
+                      Unlock Contact (WhatsApp)
+                    </a>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mb-4">
+                    <span className="text-[10px] uppercase font-bold text-emerald-600 block mb-1">Parent Phone Number</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-mono font-bold text-emerald-700">
+                        {app.tuitionPost.parentPhoneNumber || "Contact Hidden"}
+                      </span>
+                      <a 
+                        href={`tel:${app.tuitionPost.parentPhoneNumber}`}
+                        className="p-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                      >
+                        <Clock className="h-5 w-5" /> {/* Using Clock icon as a placeholder for phone since it was imported */}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            <p className="text-slate-400">You haven't applied to any tuitions yet.</p>
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard title="Available Tuition Vacancies">
         {posts && posts.items.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {posts.items.map((post) => (

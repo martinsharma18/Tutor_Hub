@@ -26,6 +26,10 @@ public class TuitionPost : AuditableEntity
     public string Schedule { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
+    
+    public string ParentPhoneNumber { get; set; } = string.Empty;
+
+    public decimal CommissionAmount { get; set; }
 
     public TuitionPostStatus Status { get; set; } = TuitionPostStatus.Pending;
 

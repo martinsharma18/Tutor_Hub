@@ -14,6 +14,11 @@ public interface IApplicationWorkflowService
         Guid applicationId,
         UpdateApplicationStatusRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<TeacherApplicationDto> VerifyPaymentAsync(
+        Guid requesterId,
+        Guid applicationId,
+        CancellationToken cancellationToken = default);
 }
 
 

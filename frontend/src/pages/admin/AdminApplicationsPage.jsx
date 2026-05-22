@@ -2,12 +2,26 @@ import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "../../features/admin/api";
 import SectionCard from "../../components/ui/SectionCard";
 import StatusBadge from "../../components/ui/StatusBadge";
-import { Briefcase, User, Calendar, MessageSquare } from "lucide-react";
+import { Briefcase, User, Calendar, MessageSquare, CheckCircle, CreditCard } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 const AdminApplicationsPage = () => {
+  const queryClient = useQueryClient();
   const { data: applications, isLoading } = useQuery({
     queryKey: ["admin-applications"],
     queryFn: adminApi.getApplications,
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: adminApi.verifyPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
+      toast.success("Payment verified and contact released!");
+    },
+    onError: () => {
+      toast.error("Failed to verify payment.");
+    }
   });
 
   if (isLoading) {
@@ -33,7 +47,8 @@ const AdminApplicationsPage = () => {
                 <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Teacher</th>
                 <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Requested For</th>
                 <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Date Applied</th>
-                <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Message</th>
+                <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Fee</th>
+                <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider text-center">Payment</th>
                 <th className="py-5 px-4 font-bold text-slate-500 text-xs uppercase tracking-wider text-right">Status</th>
               </tr>
             </thead>
@@ -67,17 +82,29 @@ const AdminApplicationsPage = () => {
                       {new Date(app.createdAtUtc).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </div>
                   </td>
-                  <td className="py-5 px-4">
-                    <div className="flex items-center gap-2 text-slate-600 text-sm italic group relative">
-                      <MessageSquare className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                      <span className="max-w-[200px] truncate block">"{app.message || "No specific message."}"</span>
-                      {app.message && app.message.length > 30 && (
-                        <div className="absolute bottom-full left-0 mb-2 p-3 bg-slate-800 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 shadow-xl">
-                          {app.message}
-                          <div className="absolute top-full left-4 border-8 border-transparent border-t-slate-800"></div>
-                        </div>
-                      )}
-                    </div>
+                  <td className="py-5 px-4 font-bold text-orange-600">
+                    ${app.commissionAmount?.toFixed(2) || "0.00"}
+                  </td>
+                  <td className="py-5 px-4 text-center">
+                    {app.isPaymentVerified ? (
+                      <div className="flex items-center justify-center gap-1 text-emerald-600 font-bold text-sm">
+                        <CheckCircle className="h-4 w-4" />
+                        Released
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if(confirm("Verify payment and reveal parent contact to this teacher?")) {
+                            verifyMutation.mutate(app.id);
+                          }
+                        }}
+                        disabled={verifyMutation.isPending}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-xs font-bold transition-all disabled:opacity-50"
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                        {verifyMutation.isPending ? "Wait..." : "Verify"}
+                      </button>
+                    )}
                   </td>
                   <td className="py-5 px-4 text-right">
                     <StatusBadge status={app.status || "Pending"} />

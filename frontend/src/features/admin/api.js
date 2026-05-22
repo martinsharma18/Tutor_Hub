@@ -19,5 +19,7 @@ export const adminApi = {
   removeTeacher: (teacherProfileId) =>
     apiClient.delete(`/admin/teachers/${teacherProfileId}`).then((res) => res.data),
   getApplications: () => apiClient.get("/admin/applications").then((res) => res.data),
+  verifyPayment: (applicationId) =>
+    apiClient.post(`/admin/applications/${applicationId}/verify-payment`).then((res) => res.data),
 };
 

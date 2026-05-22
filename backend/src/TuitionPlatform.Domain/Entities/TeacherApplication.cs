@@ -15,6 +15,10 @@ public class TeacherApplication : AuditableEntity
 
     public DateTime? ShortlistedAtUtc { get; set; }
 
+    public bool IsPaymentVerified { get; set; } = false;
+
+    public string? PaymentReference { get; set; }
+
     public DateTime? HiredAtUtc { get; set; }
 
     public TeacherProfile TeacherProfile { get; set; } = default!;

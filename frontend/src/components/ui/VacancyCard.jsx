@@ -46,10 +46,30 @@ const VacancyCard = ({
         </div>
         <div className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-orange-500" />
-          <span className="text-lg font-bold text-orange-600">
-            ${post.budget?.toFixed(2) || '0.00'}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold text-orange-600">
+              ${post.budget?.toFixed(2) || '0.00'}
+            </span>
+            {post.commissionAmount > 0 && (
+              <span className="text-[10px] uppercase font-bold text-slate-400">
+                Budget
+              </span>
+            )}
+          </div>
         </div>
+        {post.commissionAmount > 0 && (
+          <div className="flex items-center gap-2 bg-orange-50 p-2 rounded-lg border border-orange-100">
+            <User className="h-5 w-5 text-orange-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-orange-700">
+                ${post.commissionAmount?.toFixed(2)}
+              </span>
+              <span className="text-[10px] uppercase font-bold text-orange-400">
+                Unlock Fee
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer Actions */}

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { useAppDispatch } from "./store/hooks";
 import { initializeAuth } from "./store/authSlice";
 import LandingPage from "./pages/LandingPage";
@@ -38,87 +39,89 @@ const App = () => {
       console.error("Error initializing auth:", error);
     }
   }, [dispatch]);
-  
+
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/teachers" element={<TeachersPage />} />
-      <Route path="/vacancies" element={<VacanciesPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register/teacher" element={<RegisterTeacherPage />} />
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/teachers" element={<TeachersPage />} />
+        <Route path="/vacancies" element={<VacanciesPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register/teacher" element={<RegisterTeacherPage />} />
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route
-            path="/teacher"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherDashboardPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/teacher/profile"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherProfilePage /></ProtectedRoute>}
-          />
-          <Route
-            path="/teacher/applications"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherApplicationsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/teacher/demo"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherDemoRequestsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/teacher/payments"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherPaymentsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/teacher/messages"
-            element={<ProtectedRoute roles={["Teacher"]}><TeacherMessagesPage /></ProtectedRoute>}
-          />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route
+              path="/teacher"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherDashboardPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/teacher/profile"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherProfilePage /></ProtectedRoute>}
+            />
+            <Route
+              path="/teacher/applications"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherApplicationsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/teacher/demo"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherDemoRequestsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/teacher/payments"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherPaymentsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/teacher/messages"
+              element={<ProtectedRoute roles={["Teacher"]}><TeacherMessagesPage /></ProtectedRoute>}
+            />
 
-          <Route
-            path="/admin"
-            element={<ProtectedRoute roles={["Admin"]}><AdminDashboardPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/create-post"
-            element={<ProtectedRoute roles={["Admin"]}><AdminCreatePostPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/posts"
-            element={<ProtectedRoute roles={["Admin"]}><AdminPostsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/settings"
-            element={<ProtectedRoute roles={["Admin"]}><AdminSettingsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/pending-posts"
-            element={<ProtectedRoute roles={["Admin"]}><PendingPostsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/users"
-            element={<ProtectedRoute roles={["Admin"]}><UserManagementPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/teachers"
-            element={<ProtectedRoute roles={["Admin"]}><TeacherApprovalPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/teachers/:id"
-            element={<ProtectedRoute roles={["Admin"]}><AdminTeacherDetailsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/analytics"
-            element={<ProtectedRoute roles={["Admin"]}><AnalyticsPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/admin/applications"
-            element={<ProtectedRoute roles={["Admin"]}><AdminApplicationsPage /></ProtectedRoute>}
-          />
+            <Route
+              path="/admin"
+              element={<ProtectedRoute roles={["Admin"]}><AdminDashboardPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/create-post"
+              element={<ProtectedRoute roles={["Admin"]}><AdminCreatePostPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/posts"
+              element={<ProtectedRoute roles={["Admin"]}><AdminPostsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/settings"
+              element={<ProtectedRoute roles={["Admin"]}><AdminSettingsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/pending-posts"
+              element={<ProtectedRoute roles={["Admin"]}><PendingPostsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/users"
+              element={<ProtectedRoute roles={["Admin"]}><UserManagementPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/teachers"
+              element={<ProtectedRoute roles={["Admin"]}><TeacherApprovalPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/teachers/:id"
+              element={<ProtectedRoute roles={["Admin"]}><AdminTeacherDetailsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/analytics"
+              element={<ProtectedRoute roles={["Admin"]}><AnalyticsPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/admin/applications"
+              element={<ProtectedRoute roles={["Admin"]}><AdminApplicationsPage /></ProtectedRoute>}
+            />
+          </Route>
         </Route>
-      </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+      <Toaster position="top-right" />
+    </>
   );
 };
 

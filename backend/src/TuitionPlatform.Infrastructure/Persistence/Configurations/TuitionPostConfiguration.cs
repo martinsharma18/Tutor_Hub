@@ -14,6 +14,8 @@ public class TuitionPostConfiguration : IEntityTypeConfiguration<TuitionPost>
         builder.Property(p => p.Area).HasMaxLength(120);
         builder.Property(p => p.Schedule).HasMaxLength(500);
         builder.Property(p => p.Budget).HasColumnType("decimal(18,2)");
+        builder.Property(p => p.CommissionAmount).HasColumnType("decimal(18,2)");
+        builder.Property(p => p.ParentPhoneNumber).HasMaxLength(20);
 
         builder.HasMany(p => p.Applications)
             .WithOne(a => a.TuitionPost)

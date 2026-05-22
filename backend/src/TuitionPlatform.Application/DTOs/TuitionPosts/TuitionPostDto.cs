@@ -13,6 +13,8 @@ public class TuitionPostDto
     public decimal Budget { get; set; }
     public string Schedule { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string ParentPhoneNumber { get; set; } = string.Empty;
+    public decimal CommissionAmount { get; set; }
     public string Status { get; set; } = string.Empty;
 }
 

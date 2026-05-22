@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TuitionPlatform.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TuitionPlatform.Infrastructure.Persistence;
 namespace TuitionPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(TuitionPlatformDbContext))]
-    partial class TuitionPlatformDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260331060518_ii")]
+    partial class ii
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
