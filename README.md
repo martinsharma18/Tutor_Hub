@@ -59,7 +59,11 @@ To run the project locally, you will need:
 3.  **PostgreSQL** instance
 
 For the backend:
+`docker compose up -d postgres`
+
 `dotnet run --project backend/src/TuitionPlatform.Api`
+
+The local API uses PostgreSQL on `127.0.0.1:55432` so it does not conflict with an existing PostgreSQL install on port `5432`.
 
 For the frontend:
 `cd frontend && npm install && npm run dev`
