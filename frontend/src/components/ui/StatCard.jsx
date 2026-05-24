@@ -21,22 +21,31 @@ const StatCard = ({ label, value, trend, accent = "orange", icon: CustomIcon }) 
   const Icon = CustomIcon || iconMap[accent] || TrendingUp;
   
   return (
-    <div className={clsx(
-      "rounded-2xl border-2 bg-gradient-to-br p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 card-hover animate-scale-in",
-      accentMap[accent] || accentMap.orange
-    )}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-3 rounded-xl bg-white/50 backdrop-blur-sm">
-          <Icon className="h-6 w-6" />
+    <div className="glass-panel group relative p-6 overflow-hidden">
+      <div className={clsx(
+        "absolute top-0 right-0 w-32 h-32 rounded-full -mr-10 -mt-10 blur-2xl opacity-50 transition-transform duration-500 group-hover:scale-150",
+        accentMap[accent] || accentMap.orange
+      )}></div>
+      
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <div className={clsx(
+            "p-3.5 rounded-2xl bg-white shadow-sm border border-white/50 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110",
+            `text-${accent}-600`
+          )}>
+            <Icon className="h-6 w-6" />
+          </div>
+          {trend && (
+            <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-sm text-slate-600">
+              {trend}
+            </span>
+          )}
         </div>
-        {trend && (
-          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-white/50">
-            {trend}
-          </span>
-        )}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">{label}</p>
+          <p className="text-4xl font-black text-slate-800 tracking-tight">{value}</p>
+        </div>
       </div>
-      <p className="text-sm font-semibold uppercase tracking-wide opacity-80 mb-2">{label}</p>
-      <p className="text-4xl font-bold">{value}</p>
     </div>
   );
 };

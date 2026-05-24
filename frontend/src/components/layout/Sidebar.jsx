@@ -26,18 +26,22 @@ const Sidebar = ({ role }) => {
   const navItems = role === "Teacher" ? teacherNav : adminNav;
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-white/50 glass shadow-xl">
-      <div className="p-6 border-b border-orange-200 bg-gradient-to-r from-orange-500 to-orange-600">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-1 bg-white/20 rounded-lg backdrop-blur-sm">
-            <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain" />
+    <aside className="hidden lg:flex w-72 flex-col border-r border-white/60 glass-panel !rounded-none !border-y-0 !border-l-0 z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)]">
+      <div className="p-6 border-b border-white/20 bg-gradient-to-br from-orange-500 via-orange-600 to-rose-600 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+        <div className="flex items-center gap-3 mb-3 relative z-10">
+          <div className="p-1.5 bg-white/20 rounded-xl backdrop-blur-md shadow-inner border border-white/30">
+            <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain drop-shadow-md" />
           </div>
           <div>
-            <p className="text-sm uppercase tracking-widest text-orange-100 font-bold">Best</p>
-            <p className="text-lg text-white font-semibold">Tuitions</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-orange-100 font-bold opacity-80">Best</p>
+            <p className="text-xl text-white font-black tracking-tight leading-tight">Tuitions</p>
           </div>
         </div>
-        <h2 className="text-lg font-bold text-white mt-3 capitalize">{role.toLowerCase()} Dashboard</h2>
+        <h2 className="text-sm font-semibold text-orange-100 uppercase tracking-widest mt-4 flex items-center gap-2 relative z-10">
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
+          {role} Panel
+        </h2>
       </div>
       <nav className="flex-1 overflow-y-auto p-4 space-y-2">
         {navItems.map((item) => {
@@ -48,22 +52,28 @@ const Sidebar = ({ role }) => {
               to={item.to}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 group relative overflow-hidden",
+                  "flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-200 transform scale-105" 
-                    : "text-slate-700 hover:bg-orange-50 hover:text-orange-600 hover:translate-x-1"
+                    ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-[0_4px_20px_-4px_rgba(249,115,22,0.5)] transform scale-[1.02]" 
+                    : "text-slate-600 hover:bg-white/60 hover:text-orange-600 hover:translate-x-1 hover:shadow-sm"
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className={clsx(
-                    "h-5 w-5 transition-transform duration-200",
-                    "group-hover:scale-110"
-                  )} />
+                  <div className={clsx(
+                    "p-1.5 rounded-lg transition-colors duration-300",
+                    isActive ? "bg-white/20" : "bg-slate-100 group-hover:bg-orange-100"
+                  )}>
+                    <Icon className={clsx(
+                      "h-5 w-5 transition-transform duration-300",
+                      isActive ? "text-white" : "text-slate-500 group-hover:text-orange-600",
+                      "group-hover:scale-110"
+                    )} />
+                  </div>
                   <span className="relative z-10">{item.label}</span>
                   {isActive && (
-                    <div className="absolute inset-0 bg-white/10 rounded-xl animate-pulse"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
                   )}
                 </>
               )}
@@ -71,10 +81,10 @@ const Sidebar = ({ role }) => {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-orange-200 bg-white/50">
-        <div className="flex items-center gap-2 text-xs text-slate-600">
-          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>System Online</span>
+      <div className="p-5 border-t border-white/40 bg-white/30 backdrop-blur-md">
+        <div className="flex items-center gap-3 text-xs font-medium text-slate-600 bg-white/50 px-4 py-2.5 rounded-xl border border-white/60 shadow-sm">
+          <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+          <span>System Optimized</span>
         </div>
       </div>
     </aside>
