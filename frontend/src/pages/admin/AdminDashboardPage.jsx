@@ -119,12 +119,20 @@ const AdminDashboardPage = () => {
       <SectionCard 
         title="Active Vacancies"
         cta={
-          <Link 
-            to="/admin/posts" 
-            className="group flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 font-bold bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-full transition-all"
-          >
-            View All <TrendingUp className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link 
+              to="/admin/create-post"
+              className="group flex items-center gap-2 text-sm text-white font-bold bg-gradient-to-r from-orange-500 to-rose-500 shadow-md hover:shadow-lg px-5 py-2 rounded-full transition-all hover:-translate-y-0.5"
+            >
+              Post Vacancy <FileText className="h-4 w-4" />
+            </Link>
+            <Link 
+              to="/admin/posts" 
+              className="group flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 font-bold bg-orange-50 hover:bg-orange-100 px-5 py-2 rounded-full transition-all"
+            >
+              View All <TrendingUp className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         }
       >
         {allPosts && allPosts.items.length > 0 ? (
