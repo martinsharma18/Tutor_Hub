@@ -42,6 +42,28 @@ const steps = [
   { id: 5, title: "CV & Bio", icon: FileText },
 ];
 
+const optionalString = (value) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+};
+
+const requiredString = (value) => value.trim();
+
+const getApiErrorMessage = (error) => {
+  const data = error?.response?.data;
+
+  if (data?.errors) {
+    const messages = Object.values(data.errors).flat().filter(Boolean);
+    if (messages.length > 0) return messages[0];
+  }
+
+  if (data?.detail) return data.detail;
+  if (data?.title) return data.title;
+  if (error?.code === "ERR_NETWORK") return "Network error. Please check your connection and try again.";
+
+  return error?.message || "Registration failed. Please check your details and try again.";
+};
+
 const RegisterTeacherPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -104,7 +126,27 @@ const RegisterTeacherPage = () => {
   };
 
   const onSubmit = (values) => {
-    mutation.mutate({ ...values, cvUrl: cvBase64 || null });
+    mutation.mutate({
+      fullName: requiredString(values.fullName),
+      email: requiredString(values.email).toLowerCase(),
+      password: values.password,
+      phoneNumber: requiredString(values.phoneNumber),
+      qualification: requiredString(values.qualification),
+      university: optionalString(values.university),
+      graduationYear: optionalString(values.graduationYear),
+      yearsOfExperience: values.yearsOfExperience,
+      experienceSummary: requiredString(values.experienceSummary),
+      subjects: requiredString(values.subjects),
+      classes: requiredString(values.classes),
+      preferredMode: values.preferredMode,
+      bio: requiredString(values.bio),
+      city: requiredString(values.city),
+      area: requiredString(values.area),
+      hourlyRate: values.hourlyRate ?? null,
+      gender: optionalString(values.gender),
+      nationalId: optionalString(values.nationalId),
+      cvUrl: cvBase64 || null,
+    });
   };
 
   const inputClass = (error) =>
@@ -432,7 +474,7 @@ const RegisterTeacherPage = () => {
                   {/* Error */}
                   {mutation.isError && (
                     <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
-                      Registration failed. Please check your details and try again.
+                      {getApiErrorMessage(mutation.error)}
                     </div>
                   )}
                 </div>
