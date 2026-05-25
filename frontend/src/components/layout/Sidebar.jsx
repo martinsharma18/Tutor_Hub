@@ -26,20 +26,20 @@ const Sidebar = ({ role }) => {
   const navItems = role === "Teacher" ? teacherNav : adminNav;
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col border-r border-white/60 glass-panel !rounded-none !border-y-0 !border-l-0 z-20 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)]">
-      <div className="p-6 border-b border-white/20 bg-gradient-to-br from-orange-500 via-orange-600 to-rose-600 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-        <div className="flex items-center gap-3 mb-3 relative z-10">
-          <div className="p-1.5 bg-white/20 rounded-xl backdrop-blur-md shadow-inner border border-white/30">
-            <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain drop-shadow-md" />
+    <aside className="hidden lg:flex w-72 flex-col glass-panel shadow-[0_8px_32px_-4px_rgba(234,88,12,0.15)] z-20 overflow-hidden">
+      <div className="p-8 pb-6 border-b border-white/40 bg-gradient-to-br from-white/60 to-white/20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-400/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+        <div className="flex items-center gap-4 mb-4 relative z-10">
+          <div className="p-2 bg-gradient-to-br from-orange-500 to-rose-500 rounded-2xl shadow-md border border-orange-400/30">
+            <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain drop-shadow-sm filter brightness-0 invert" />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-orange-100 font-bold opacity-80">Best</p>
-            <p className="text-xl text-white font-black tracking-tight leading-tight">Tuitions</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-orange-600 font-black opacity-90 mb-0.5">Best</p>
+            <p className="text-xl text-slate-800 font-black tracking-tight leading-none">Tuitions</p>
           </div>
         </div>
-        <h2 className="text-sm font-semibold text-orange-100 uppercase tracking-widest mt-4 flex items-center gap-2 relative z-10">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
+        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
           {role} Panel
         </h2>
       </div>
@@ -52,28 +52,27 @@ const Sidebar = ({ role }) => {
               to={item.to}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all duration-300 group relative overflow-hidden",
+                  "flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-[0_4px_20px_-4px_rgba(249,115,22,0.5)] transform scale-[1.02]" 
-                    : "text-slate-600 hover:bg-white/60 hover:text-orange-600 hover:translate-x-1 hover:shadow-sm"
+                    ? "bg-white shadow-sm border border-white/60 text-orange-600 transform scale-[1.02]" 
+                    : "text-slate-500 hover:bg-white/40 hover:text-orange-600 hover:translate-x-1"
                 )
               }
             >
               {({ isActive }) => (
                 <>
                   <div className={clsx(
-                    "p-1.5 rounded-lg transition-colors duration-300",
-                    isActive ? "bg-white/20" : "bg-slate-100 group-hover:bg-orange-100"
+                    "p-1.5 rounded-xl transition-all duration-300",
+                    isActive ? "bg-orange-100 text-orange-600" : "bg-slate-100 text-slate-400 group-hover:bg-orange-50 group-hover:text-orange-500"
                   )}>
                     <Icon className={clsx(
                       "h-5 w-5 transition-transform duration-300",
-                      isActive ? "text-white" : "text-slate-500 group-hover:text-orange-600",
                       "group-hover:scale-110"
                     )} />
                   </div>
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10 tracking-wide">{item.label}</span>
                   {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] animate-[shimmer_2s_infinite]"></div>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-orange-500 to-rose-500 rounded-r-full"></div>
                   )}
                 </>
               )}

@@ -59,12 +59,12 @@ const AdminDashboardPage = () => {
   return (
     <div className="space-y-8 animate-fade-in pb-10">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-orange-500 via-rose-500 to-orange-500 bg-[length:200%_auto] animate-[gradient_8s_ease_infinite] rounded-[2.5rem] p-8 md:p-14 text-white shadow-[0_10px_40px_-10px_rgba(249,115,22,0.6)] relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/20 rounded-full -mr-20 -mt-20 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
-        <div className="absolute bottom-0 left-10 w-60 h-60 bg-white/10 rounded-full -mb-20 blur-2xl"></div>
+      <div className="bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-white/50 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/40 rounded-full -mr-20 -mt-20 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
+        <div className="absolute bottom-0 left-10 w-60 h-60 bg-white/30 rounded-full -mb-20 blur-2xl"></div>
         <div className="relative z-10 max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">Platform Dashboard</h1>
-          <p className="text-orange-100 text-lg md:text-xl font-medium tracking-wide">Monitor performance, manage users, and oversee vacancies across the network.</p>
+          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight text-slate-900">Platform Dashboard</h1>
+          <p className="text-slate-700 text-lg md:text-xl font-medium tracking-wide">Monitor performance, manage users, and oversee vacancies across the network.</p>
         </div>
       </div>
 
