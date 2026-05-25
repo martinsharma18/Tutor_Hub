@@ -28,10 +28,10 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed z-50 transition-all duration-500 ${
-        isScrolled
-          ? "top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl rounded-full glass shadow-xl border border-white/60 py-1"
-          : "top-0 left-0 right-0 w-full bg-transparent py-4"
+      className={`fixed left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-50 transition-all duration-500 rounded-3xl lg:rounded-full ${
+        isScrolled || isMobileMenuOpen
+          ? "top-4 bg-white/95 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200/80 py-2"
+          : "top-6 bg-white/50 backdrop-blur-md shadow-sm border border-white/80 py-3"
       }`}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,9 +97,9 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-200 animate-slide-down">
+          <div className="absolute top-[110%] left-0 right-0 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200 py-4 px-6 lg:hidden animate-slide-down">
             {navItems.map((item) => (
               <Link
                 key={item.path}
