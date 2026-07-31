@@ -59,6 +59,7 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// Run migrations on startup (all environments)
 try
 {
     using var scope = app.Services.CreateScope();
@@ -100,6 +101,45 @@ catch (Exception ex)
 {
     Console.WriteLine($"Warning: Could not apply database migrations: {ex.Message}");
     throw;
+}
+
+// Seed default admin user in ALL environments
+try
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<TuitionPlatformDbContext>();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<TuitionPlatform.Application.Interfaces.Services.IPasswordHasher>();
+
+    var adminExists = await dbContext.Users.AnyAsync(u => u.Email == "martinsharma18@gmail.com");
+    if (!adminExists)
+    {
+        var adminUser = new TuitionPlatform.Domain.Entities.User
+        {
+            Id = Guid.NewGuid(),
+            Email = "martinsharma18@gmail.com",
+            FullName = "System Administrator",
+            PasswordHash = passwordHasher.Hash("Martin#123"),
+            Role = TuitionPlatform.Domain.Enums.UserRole.Admin,
+            IsActive = true,
+            EmailVerified = true,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        dbContext.Users.Add(adminUser);
+        await dbContext.SaveChangesAsync();
+        Console.WriteLine("✅ Default admin user created!");
+        Console.WriteLine("   Email: martinsharma18@gmail.com");
+        Console.WriteLine("   Password: Martin#123");
+    }
+    else
+    {
+        Console.WriteLine("ℹ️  Admin user already exists, skipping seed.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️  Warning: Could not seed admin user: {ex.Message}");
+    Console.WriteLine("   The application will continue, but the admin account may not exist.");
 }
 
 if (app.Environment.IsDevelopment())
