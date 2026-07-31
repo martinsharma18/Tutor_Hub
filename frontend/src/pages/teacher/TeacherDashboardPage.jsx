@@ -59,8 +59,18 @@ const TeacherDashboardPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+    <div className="space-y-8 animate-fade-in pb-10">
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-white/50 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/40 rounded-full -mr-20 -mt-20 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
+        <div className="absolute bottom-0 left-10 w-60 h-60 bg-white/30 rounded-full -mb-20 blur-2xl"></div>
+        <div className="relative z-10 max-w-2xl">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight text-slate-900">Teacher Dashboard</h1>
+          <p className="text-slate-700 text-lg md:text-xl font-medium tracking-wide">Manage your applications, handle demo requests, and find new tuition opportunities.</p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
         {stats.map((stat) => (
           <StatCard key={stat.label} label={stat.label} value={stat.value} accent={stat.accent} />
         ))}
@@ -72,9 +82,9 @@ const TeacherDashboardPage = () => {
             {myApplications.map((app) => (
               <div 
                 key={app.id} 
-                className="bg-white rounded-2xl border-2 border-slate-100 p-6 shadow-sm hover:shadow-md transition-all"
+                className="glass-panel p-8 group relative card-hover"
               >
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-6">
                   <div>
                     <h4 className="text-xl font-bold text-slate-800">{app.tuitionPost.subject}</h4>
                     <p className="text-sm text-slate-500">{app.tuitionPost.classLevel} - {app.tuitionPost.city}</p>
@@ -107,7 +117,7 @@ const TeacherDashboardPage = () => {
                       href={`https://wa.me/9779800000000?text=Hi+Admin,+I+have+applied+for+${encodeURIComponent(app.tuitionPost.subject)}+in+${app.tuitionPost.city}+ID:+${app.id}.+I+want+to+unlock+the+contact.`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-600 transition-all"
+                      className="btn-premium inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:shadow-lg transition-all"
                     >
                       Unlock Contact (WhatsApp)
                     </a>
@@ -165,7 +175,7 @@ const TeacherDashboardPage = () => {
                   />
                   <button
                     onClick={() => applyMutation.mutate({ tuitionPostId: post.id, message: messages[post.id] ?? "" })}
-                    className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-60 transition-all duration-200 transform hover:scale-105 active:scale-95"
+                    className="btn-premium w-full rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:shadow-lg disabled:opacity-60 transition-all"
                     disabled={applyMutation.isPending || !messages[post.id]?.trim()}
                   >
                     {applyMutation.isPending ? "Applying..." : "Apply to this post"}

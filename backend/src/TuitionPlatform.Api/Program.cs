@@ -65,6 +65,37 @@ try
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<TuitionPlatformDbContext>();
     await dbContext.Database.MigrateAsync();
+
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<TuitionPlatform.Application.Interfaces.Services.IPasswordHasher>();
+    var adminUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == "martinsharma18@gmail.com");
+    if (adminUser is null)
+    {
+        adminUser = new TuitionPlatform.Domain.Entities.User
+        {
+            Id = Guid.NewGuid(),
+            Email = "martinsharma18@gmail.com",
+            FullName = "System Administrator",
+            PasswordHash = passwordHasher.Hash("Martin#123"),
+            Role = TuitionPlatform.Domain.Enums.UserRole.Admin,
+            IsActive = true,
+            EmailVerified = true,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        dbContext.Users.Add(adminUser);
+        Console.WriteLine("Default admin user created.");
+    }
+    else
+    {
+        adminUser.Role = TuitionPlatform.Domain.Enums.UserRole.Admin;
+        adminUser.PasswordHash = passwordHasher.Hash("Martin#123");
+        adminUser.IsActive = true;
+        adminUser.EmailVerified = true;
+        adminUser.UpdatedAtUtc = DateTime.UtcNow;
+        Console.WriteLine("Default admin user promoted.");
+    }
+
+    await dbContext.SaveChangesAsync();
 }
 catch (Exception ex)
 {

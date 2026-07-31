@@ -28,10 +28,10 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "glass bg-white/70 shadow-sm"
-          : "bg-transparent"
+      className={`fixed left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-50 transition-all duration-500 rounded-3xl lg:rounded-full ${
+        isScrolled || isMobileMenuOpen
+          ? "top-4 bg-white/95 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200/80 py-2"
+          : "top-6 bg-white/50 backdrop-blur-md shadow-sm border border-white/80 py-3"
       }`}
     >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,7 +41,7 @@ const Header = () => {
             to="/"
             className="flex items-center gap-2 text-2xl font-bold text-slate-900 hover:text-orange-600 transition-colors"
           >
-            <div className="p-1 bg-gradient-to-br from-orange-600 to-orange-800 rounded-xl shadow-md">
+            <div className="p-1 bg-white rounded-xl shadow-md">
               <img src={logo} alt="Best Tuitions" className="h-8 w-8 object-contain" />
             </div>
             <span className="hidden sm:inline">Best Tuitions</span>
@@ -53,10 +53,10 @@ const Header = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="text-slate-700 hover:text-orange-600 font-medium transition-colors relative group"
+                className="text-slate-700 hover:text-orange-600 font-bold transition-colors relative group tracking-wide"
               >
                 {item.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-orange-600 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-600 group-hover:w-full transition-all duration-300 rounded-full"></span>
               </Link>
             ))}
           </div>
@@ -74,7 +74,7 @@ const Header = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-5 py-2.5 text-slate-700 hover:text-orange-600 font-medium transition-colors"
+                  className="px-6 py-2.5 text-slate-700 hover:text-orange-600 font-bold transition-all duration-200 border-2 border-transparent hover:border-orange-200 hover:bg-orange-50/80 rounded-xl"
                 >
                   Login
                 </Link>
@@ -97,9 +97,9 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-200 animate-slide-down">
+          <div className="absolute top-[110%] left-0 right-0 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200 py-4 px-6 lg:hidden animate-slide-down">
             {navItems.map((item) => (
               <Link
                 key={item.path}

@@ -7,14 +7,16 @@ import {
   MapPin,
   ShieldCheck,
   Users,
+  TrendingUp,
 } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 const stats = [
-  { label: "Tutor-focused workflows", value: "100%" },
-  { label: "Core teaching modes", value: "3" },
-  { label: "Admin review pipeline", value: "24/7" },
+  { icon: Users, label: "Registered Teachers", value: "500+" },
+  { icon: BookOpen, label: "Subjects Covered", value: "40+" },
+  { icon: MapPin, label: "Cities Active", value: "15+" },
+  { icon: TrendingUp, label: "Success Rate", value: "98%" },
 ];
 
 const values = [
@@ -81,12 +83,18 @@ const AboutPage = () => {
 
               <div className="bg-white border border-orange-100 rounded-3xl shadow-xl p-8">
                 <div className="grid grid-cols-1 gap-5">
-                  {stats.map((stat) => (
-                    <div key={stat.label} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl">
-                      <span className="text-slate-600 font-semibold">{stat.label}</span>
-                      <span className="text-3xl font-black text-orange-600">{stat.value}</span>
-                    </div>
-                  ))}
+                  {stats.map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div key={stat.label} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl">
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5 text-orange-500" />
+                          <span className="text-slate-600 font-semibold">{stat.label}</span>
+                        </div>
+                        <span className="text-3xl font-black text-orange-600">{stat.value}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

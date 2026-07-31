@@ -57,13 +57,14 @@ const AdminDashboardPage = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-10">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110"></div>
-        <div className="relative z-10">
-          <h1 className="text-4xl md:text-5xl font-black mb-4">Dashboard</h1>
-          <p className="text-orange-100 text-xl font-medium">Platform Management & Overview</p>
+      <div className="bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-white/50 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-white/40 rounded-full -mr-20 -mt-20 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
+        <div className="absolute bottom-0 left-10 w-60 h-60 bg-white/30 rounded-full -mb-20 blur-2xl"></div>
+        <div className="relative z-10 max-w-2xl">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight text-slate-900">Platform Dashboard</h1>
+          <p className="text-slate-700 text-lg md:text-xl font-medium tracking-wide">Monitor performance, manage users, and oversee vacancies across the network.</p>
         </div>
       </div>
 
@@ -88,22 +89,27 @@ const AdminDashboardPage = () => {
             <Link
               key={action.label}
               to={action.to}
-              className="group relative bg-white rounded-2xl border-2 border-slate-100 p-8 hover:border-orange-500 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+              className="glass-panel group relative p-8 card-hover"
             >
-              <div className="flex items-center justify-between mb-6">
-                <div className={`p-4 rounded-2xl bg-${action.color}-50 text-${action.color}-600 group-hover:bg-orange-500 group-hover:text-white transition-colors`}>
-                  <action.icon className="h-8 w-8" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="flex items-center justify-between mb-8">
+                  <div className={`p-4 rounded-2xl bg-${action.color}-50 text-${action.color}-600 group-hover:bg-gradient-to-br group-hover:from-${action.color}-400 group-hover:to-${action.color}-600 group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] group-hover:-translate-y-1`}>
+                    <action.icon className="h-7 w-7" />
+                  </div>
+                  {action.count !== null && (
+                    <span className="px-3 py-1 bg-white/80 backdrop-blur-md text-slate-700 rounded-full text-xs font-bold shadow-sm border border-slate-100 group-hover:bg-white group-hover:text-orange-600 transition-colors">
+                      {action.count} New
+                    </span>
+                  )}
                 </div>
-                {action.count !== null && (
-                  <span className="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-bold group-hover:bg-orange-100 group-hover:text-orange-700 transition-colors">
-                    {action.count}
-                  </span>
-                )}
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:to-rose-600 transition-all duration-300">
+                    {action.label}
+                  </h3>
+                  <p className="text-slate-500 mt-2 text-sm font-medium tracking-wide">Manage & Configure</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
-                {action.label}
-              </h3>
-              <p className="text-slate-500 mt-2 font-medium">Access dedicated tools</p>
             </Link>
           ))}
         </div>
@@ -113,12 +119,20 @@ const AdminDashboardPage = () => {
       <SectionCard 
         title="Active Vacancies"
         cta={
-          <Link 
-            to="/admin/posts" 
-            className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-bold hover:gap-3 transition-all"
-          >
-            Manage All <TrendingUp className="h-5 w-5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link 
+              to="/admin/create-post"
+              className="group flex items-center gap-2 text-sm text-white font-bold bg-gradient-to-r from-orange-500 to-rose-500 shadow-md hover:shadow-lg px-5 py-2 rounded-full transition-all hover:-translate-y-0.5"
+            >
+              Post Vacancy <FileText className="h-4 w-4" />
+            </Link>
+            <Link 
+              to="/admin/posts" 
+              className="group flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 font-bold bg-orange-50 hover:bg-orange-100 px-5 py-2 rounded-full transition-all"
+            >
+              View All <TrendingUp className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         }
       >
         {allPosts && allPosts.items.length > 0 ? (
@@ -128,20 +142,22 @@ const AdminDashboardPage = () => {
                 key={post.id}
                 post={post}
                 showActions={false}
-                className="border-2 border-slate-100 bg-white hover:border-orange-200"
+                className="glass-panel !border-white/80 hover:!border-orange-200"
               />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-            <Briefcase className="h-16 w-16 text-slate-300 mx-auto mb-6" />
-            <p className="text-xl font-bold text-slate-900">No vacancies posted yet</p>
-            <p className="text-slate-500 mt-2">Start by creating your first tuition vacancy</p>
+          <div className="text-center py-24 glass-panel border-dashed border-2 border-slate-300/50">
+            <div className="inline-flex p-6 rounded-full bg-slate-100/50 mb-6 shadow-inner">
+              <Briefcase className="h-12 w-12 text-slate-400" />
+            </div>
+            <p className="text-2xl font-black text-slate-800 tracking-tight">No active vacancies</p>
+            <p className="text-slate-500 mt-3 font-medium">Post your first tuition vacancy to attract teachers.</p>
             <Link 
               to="/admin/create-post"
-              className="inline-flex items-center gap-2 mt-8 px-8 py-3 bg-orange-500 text-white font-bold rounded-2xl hover:bg-orange-600 transition-all shadow-lg"
+              className="btn-premium inline-flex items-center gap-2 mt-8 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold rounded-xl shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]"
             >
-              Create Now <FileText className="h-5 w-5" />
+              Post Vacancy <FileText className="h-5 w-5" />
             </Link>
           </div>
         )}

@@ -68,6 +68,8 @@ The local API uses PostgreSQL on `127.0.0.1:55432` so it does not conflict with 
 For the frontend:
 `cd frontend && npm install && npm run dev`
 
+Deployment settings are documented in `DEPLOYMENT.md`.
+
 ---
 
 ## 🤝 Contributing

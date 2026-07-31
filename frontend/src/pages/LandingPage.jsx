@@ -59,33 +59,33 @@ const LandingPage = () => {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+      <section className="relative pt-36 pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-orange-50 via-white to-slate-50 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}></div>
         </div>
-        <div className="absolute top-[-80px] left-[-100px] w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-        <div className="absolute bottom-[-60px] right-[-80px] w-80 h-80 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40"></div>
+        <div className="absolute top-[-80px] left-[-100px] w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+        <div className="absolute bottom-[-60px] right-[-80px] w-80 h-80 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
 
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
-              Elevate Your <br/>
-              <span className="bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
+              Elevate Your <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-orange-500 to-orange-700 bg-clip-text text-transparent">
                 Teaching Career
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-slate-600 max-w-3xl mx-auto font-medium">
+            <p className="text-lg md:text-2xl text-slate-600 max-w-3xl mx-auto font-medium px-2">
               Find premium home tuition vacancies and connect with learners directly.
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto animate-slide-up">
-            <div className="glass rounded-[32px] shadow-2xl p-3 border border-white/40 flex flex-col md:flex-row items-center gap-2 relative z-10">
-              <div className="flex-1 flex items-center gap-3 w-full pl-6">
-                <Search className="h-6 w-6 text-orange-500 hidden md:block" />
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl md:rounded-[32px] shadow-2xl p-4 md:p-3 border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-2 relative z-10">
+              <div className="flex-1 flex items-center gap-3 w-full px-4 md:pl-6 bg-slate-50 md:bg-transparent rounded-2xl md:rounded-none py-1 md:py-0 border border-slate-100 md:border-transparent">
+                <Search className="h-5 w-5 text-orange-500 shrink-0" />
                 <input
                   type="text"
                   placeholder="What subject do you teach?"
@@ -94,9 +94,9 @@ const LandingPage = () => {
                   className="w-full py-4 bg-transparent outline-none text-slate-800 font-medium placeholder-slate-400"
                 />
               </div>
-              <div className="h-10 w-[2px] bg-slate-100 hidden md:block"></div>
-              <div className="flex-1 flex items-center gap-3 w-full pl-6">
-                <MapPin className="h-6 w-6 text-orange-500 hidden md:block" />
+              <div className="hidden md:block h-10 w-[2px] bg-slate-200"></div>
+              <div className="flex-1 flex items-center gap-3 w-full px-4 md:pl-6 bg-slate-50 md:bg-transparent rounded-2xl md:rounded-none py-1 md:py-0 border border-slate-100 md:border-transparent">
+                <MapPin className="h-5 w-5 text-orange-500 shrink-0" />
                 <input
                   type="text"
                   placeholder="Preferred City"
@@ -107,7 +107,7 @@ const LandingPage = () => {
               </div>
               <button
                 onClick={() => handleSearch("vacancies")}
-                className="w-full md:w-auto px-10 py-5 bg-gradient-to-r from-orange-600 to-orange-800 text-white font-bold rounded-2xl hover:shadow-orange-200 hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-95 whitespace-nowrap"
+                className="w-full md:w-auto px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-2xl md:rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 whitespace-nowrap mt-2 md:mt-0"
               >
                 Find Openings
               </button>
@@ -116,34 +116,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Statistics Strip */}
-      <section className="border-y border-orange-200 bg-orange-100">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <Users className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-3xl font-black text-slate-900">500+</div>
-            <div className="text-xs font-semibold mt-1 text-slate-600">Registered Teachers</div>
-          </div>
-          <div>
-            <BookOpen className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-3xl font-black text-slate-900">40+</div>
-            <div className="text-xs font-semibold mt-1 text-slate-600">Subjects Covered</div>
-          </div>
-          <div>
-            <MapPin className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-3xl font-black text-slate-900">15+</div>
-            <div className="text-xs font-semibold mt-1 text-slate-600">Cities Active</div>
-          </div>
-          <div>
-            <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-3xl font-black text-slate-900">98%</div>
-            <div className="text-xs font-semibold mt-1 text-slate-600">Success Rate</div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Available Vacancies Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-orange-50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50">
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-8">
             <div>
@@ -184,7 +160,7 @@ const LandingPage = () => {
       </section>
 
       {/* Premium Features */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-slate-50">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="container mx-auto max-w-6xl text-center">
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-16 tracking-tight">
             Designed for <br/>Professional Educators
@@ -196,7 +172,7 @@ const LandingPage = () => {
               return (
                 <div
                   key={index}
-                  className="glass p-10 rounded-3xl border border-white/40 hover:border-orange-500 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group"
+                  className="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:border-orange-500 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group"
                 >
                   <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-8 mx-auto group-hover:bg-gradient-to-br group-hover:from-orange-600 group-hover:to-orange-800 group-hover:text-white transition-colors shadow-sm">
                     <Icon className="h-10 w-10" />
@@ -215,7 +191,7 @@ const LandingPage = () => {
       </section>
 
       {/* Subjects Section */}
-      <section className="py-20 bg-orange-100">
+      <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
           <div className="text-center mb-12">
             <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-orange-700 bg-orange-200">All Subjects</span>
@@ -233,7 +209,7 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-20 bg-slate-50">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-20 bg-white">
         <div className="text-center mb-14">
           <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full text-orange-700 bg-orange-200">Reviews</span>
           <h2 className="text-4xl font-black mt-4 mb-3 text-slate-900">What People Say</h2>
@@ -244,7 +220,7 @@ const LandingPage = () => {
             { quote: "I registered and got 3 new students in the first week. Highly recommend to all tutors.", name: "Sir Ram Thapa", role: "Teacher", initial: "S" },
             { quote: "My grades improved drastically after finding a tutor through Best Tuitions.", name: "Fatima Malik", role: "Student", initial: "F" }
           ].map((testimonial, i) => (
-            <div key={i} className="glass p-7 rounded-2xl border border-white/50 shadow-xl hover:-translate-y-1 transition-all">
+            <div key={i} className="bg-slate-50 p-7 rounded-2xl border border-slate-100 shadow-md hover:-translate-y-1 transition-all">
               <div className="flex gap-1 mb-4">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star key={star} className="h-4 w-4 text-orange-500 fill-orange-500" />
