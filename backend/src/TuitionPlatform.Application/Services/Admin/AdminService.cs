@@ -137,6 +137,12 @@ public class AdminService : IAdminService
         }).ToList();
     }
 
+    public async Task<List<TeacherProfileDto>> GetAllTeachersAsync(CancellationToken cancellationToken = default)
+    {
+        var teachers = await _teacherProfileRepository.GetAllWithUsersAsync(cancellationToken);
+        return teachers.Select(_mapper.Map<TeacherProfileDto>).ToList();
+    }
+
     public async Task<UserDto> UpdateUserStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken)

@@ -4,16 +4,15 @@ import { Link } from "react-router-dom";
 import SectionCard from "../../components/ui/SectionCard";
 import PageHeader from "../../components/ui/PageHeader";
 import { adminApi } from "../../features/admin/api";
-import { searchApi } from "../../features/search/api";
 import { UserCheck, CheckCircle2, XCircle, Eye } from "lucide-react";
 
 const TeacherApprovalPage = () => {
   const queryClient = useQueryClient();
   const [showOnlyPending, setShowOnlyPending] = useState(true);
 
-  const { data: searchData, isLoading } = useQuery({
+  const { data: teachersData, isLoading } = useQuery({
     queryKey: ["admin-teachers-list"],
-    queryFn: () => searchApi.teachers({ pageSize: 100 }),
+    queryFn: adminApi.getTeachers,
   });
 
   const approveMutation = useMutation({
@@ -36,7 +35,7 @@ const TeacherApprovalPage = () => {
     );
   }
 
-  const allTeachers = searchData?.items ?? [];
+  const allTeachers = Array.isArray(teachersData) ? teachersData : (teachersData?.items ?? []);
   const pendingTeachers = allTeachers.filter((t) => !t.isApproved);
   const displayedTeachers = showOnlyPending ? pendingTeachers : allTeachers;
 

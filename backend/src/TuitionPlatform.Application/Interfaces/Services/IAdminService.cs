@@ -19,6 +19,8 @@ public interface IAdminService
 
     Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default);
 
+    Task<List<TeacherProfileDto>> GetAllTeachersAsync(CancellationToken cancellationToken = default);
+
     Task<UserDto> UpdateUserStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default);
 
     Task<UserDto> UpdateUserRoleAsync(Guid userId, string role, CancellationToken cancellationToken = default);

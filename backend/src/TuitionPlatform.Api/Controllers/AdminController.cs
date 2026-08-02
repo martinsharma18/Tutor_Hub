@@ -67,6 +67,13 @@ public class AdminController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("teachers")]
+    public async Task<ActionResult<List<TeacherProfileDto>>> GetAllTeachers(CancellationToken cancellationToken)
+    {
+        var result = await _adminService.GetAllTeachersAsync(cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("applications")]
     public async Task<ActionResult<List<TeacherApplicationDto>>> ListApplications(CancellationToken cancellationToken)
     {
