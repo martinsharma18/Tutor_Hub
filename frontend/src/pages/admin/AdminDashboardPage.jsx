@@ -3,9 +3,13 @@ import { Link } from "react-router-dom";
 import StatCard from "../../components/ui/StatCard";
 import SectionCard from "../../components/ui/SectionCard";
 import VacancyCard from "../../components/ui/VacancyCard";
+import PageHeader from "../../components/ui/PageHeader";
 import { adminApi } from "../../features/admin/api";
 import { postsApi } from "../../features/posts/api";
-import { Users, TrendingUp, CheckCircle2, DollarSign, FileText, MessageSquare, Briefcase } from "lucide-react";
+import {
+  Users, DollarSign, Briefcase, MessageSquare, FileText,
+  CheckCircle2, PlusCircle, ArrowRight, LayoutDashboard,
+} from "lucide-react";
 
 const AdminDashboardPage = () => {
   const { data: summary } = useQuery({
@@ -19,145 +23,97 @@ const AdminDashboardPage = () => {
   });
 
   const stats = [
-    { 
-      label: "Total Users", 
-      value: summary?.totalUsers ?? 0, 
-      accent: "blue",
-      icon: Users,
-      trend: "Total registered"
-    },
-    { 
-      label: "Total Teachers", 
-      value: summary?.totalTeachers ?? 0, 
-      accent: "amber",
-      icon: Users,
-      trend: "Active profiles"
-    },
-    { 
-      label: "Available Vacancies", 
-      value: summary?.availableVacancies ?? 0, 
-      accent: "emerald",
-      icon: Briefcase,
-      trend: "Current openings"
-    },
-    { 
-      label: "Earnings", 
-      value: `$${summary?.totalCommissionEarned?.toFixed(2) ?? "0.00"}`, 
-      accent: "orange",
-      icon: DollarSign,
-      trend: "Platfrom revenue"
-    },
+    { label: "Total Users",        value: summary?.totalUsers ?? 0,       accent: "indigo", icon: Users,     subtitle: "Registered accounts" },
+    { label: "Total Teachers",     value: summary?.totalTeachers ?? 0,    accent: "blue",   icon: Users,     subtitle: "Active profiles"      },
+    { label: "Open Vacancies",     value: summary?.availableVacancies ?? 0, accent: "emerald", icon: Briefcase, subtitle: "Current openings"   },
+    { label: "Platform Earnings",  value: `$${(summary?.totalCommissionEarned ?? 0).toFixed(2)}`, accent: "amber", icon: DollarSign, subtitle: "Total commission" },
   ];
 
   const quickActions = [
-    { label: "Post Vacancy", count: null, to: "/admin/create-post", icon: FileText, color: "orange" },
-    { label: "Manage Vacancies", count: summary?.availableVacancies ?? 0, to: "/admin/posts", icon: Briefcase, color: "blue" },
-    { label: "Teacher Applications", count: null, to: "/admin/applications", icon: MessageSquare, color: "rose" },
-    { label: "Teacher Approval", count: 0, to: "/admin/teachers", icon: CheckCircle2, color: "emerald" },
+    { label: "Post Vacancy",       to: "/admin/create-post",    icon: PlusCircle,   color: "text-primary-600 bg-primary-50",   desc: "Create a new tuition opening"          },
+    { label: "Manage Vacancies",   to: "/admin/posts",          icon: Briefcase,    color: "text-blue-600 bg-blue-50",         desc: `${summary?.availableVacancies ?? 0} active` },
+    { label: "Applications",       to: "/admin/applications",   icon: MessageSquare, color: "text-rose-600 bg-rose-50",         desc: "Review submitted applications"         },
+    { label: "Teacher Approval",   to: "/admin/teachers",       icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50",   desc: "Approve pending teachers"              },
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-br from-orange-200 via-orange-100 to-orange-200 rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-white/50 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white/40 rounded-full -mr-20 -mt-20 blur-3xl transition-transform duration-1000 group-hover:scale-150"></div>
-        <div className="absolute bottom-0 left-10 w-60 h-60 bg-white/30 rounded-full -mb-20 blur-2xl"></div>
-        <div className="relative z-10 max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight text-slate-900">Platform Dashboard</h1>
-          <p className="text-slate-700 text-lg md:text-xl font-medium tracking-wide">Monitor performance, manage users, and oversee vacancies across the network.</p>
-        </div>
-      </div>
+    <div className="space-y-6 animate-fade-in pb-8">
+      <PageHeader
+        title="Platform Dashboard"
+        subtitle="Monitor performance, manage users, and oversee vacancies."
+        icon={LayoutDashboard}
+      />
 
-      {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <StatCard 
-            key={stat.label} 
-            label={stat.label} 
-            value={stat.value} 
-            accent={stat.accent}
-            icon={stat.icon}
-            trend={stat.trend}
-          />
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((s) => (
+          <StatCard key={s.label} {...s} />
         ))}
       </div>
 
       {/* Quick Actions */}
-      <SectionCard title="Administration Controls">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              to={action.to}
-              className="glass-panel group relative p-8 card-hover"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="flex items-center justify-between mb-8">
-                  <div className={`p-4 rounded-2xl bg-${action.color}-50 text-${action.color}-600 group-hover:bg-gradient-to-br group-hover:from-${action.color}-400 group-hover:to-${action.color}-600 group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] group-hover:-translate-y-1`}>
-                    <action.icon className="h-7 w-7" />
-                  </div>
-                  {action.count !== null && (
-                    <span className="px-3 py-1 bg-white/80 backdrop-blur-md text-slate-700 rounded-full text-xs font-bold shadow-sm border border-slate-100 group-hover:bg-white group-hover:text-orange-600 transition-colors">
-                      {action.count} New
-                    </span>
-                  )}
+      <SectionCard title="Administration Controls" subtitle="Quick access to common tasks">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.label}
+                to={action.to}
+                className="group flex flex-col gap-3 p-5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-card-md transition-all duration-200"
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-800 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:to-rose-600 transition-all duration-300">
+                  <p className="font-semibold text-slate-800 text-sm group-hover:text-primary-700 transition-colors">
                     {action.label}
-                  </h3>
-                  <p className="text-slate-500 mt-2 text-sm font-medium tracking-wide">Manage & Configure</p>
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">{action.desc}</p>
                 </div>
-              </div>
-            </Link>
-          ))}
+                <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-primary-500 group-hover:translate-x-1 transition-all mt-auto self-end" />
+              </Link>
+            );
+          })}
         </div>
       </SectionCard>
 
       {/* Recent Vacancies */}
-      <SectionCard 
+      <SectionCard
         title="Active Vacancies"
+        subtitle="Most recently posted openings"
         cta={
-          <div className="flex items-center gap-3">
-            <Link 
+          <div className="flex items-center gap-2">
+            <Link
               to="/admin/create-post"
-              className="group flex items-center gap-2 text-sm text-white font-bold bg-gradient-to-r from-orange-500 to-rose-500 shadow-md hover:shadow-lg px-5 py-2 rounded-full transition-all hover:-translate-y-0.5"
+              className="btn-primary text-xs px-3 py-2"
             >
-              Post Vacancy <FileText className="h-4 w-4" />
+              <PlusCircle className="h-3.5 w-3.5" /> Post Vacancy
             </Link>
-            <Link 
-              to="/admin/posts" 
-              className="group flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 font-bold bg-orange-50 hover:bg-orange-100 px-5 py-2 rounded-full transition-all"
+            <Link
+              to="/admin/posts"
+              className="btn-secondary text-xs px-3 py-2"
             >
-              View All <TrendingUp className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              View All <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         }
       >
         {allPosts && allPosts.items.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {allPosts.items.slice(0, 3).map((post) => (
-              <VacancyCard
-                key={post.id}
-                post={post}
-                showActions={false}
-                className="glass-panel !border-white/80 hover:!border-orange-200"
-              />
+              <VacancyCard key={post.id} post={post} showActions={false} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-24 glass-panel border-dashed border-2 border-slate-300/50">
-            <div className="inline-flex p-6 rounded-full bg-slate-100/50 mb-6 shadow-inner">
-              <Briefcase className="h-12 w-12 text-slate-400" />
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+              <Briefcase className="h-6 w-6 text-slate-400" />
             </div>
-            <p className="text-2xl font-black text-slate-800 tracking-tight">No active vacancies</p>
-            <p className="text-slate-500 mt-3 font-medium">Post your first tuition vacancy to attract teachers.</p>
-            <Link 
-              to="/admin/create-post"
-              className="btn-premium inline-flex items-center gap-2 mt-8 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold rounded-xl shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]"
-            >
-              Post Vacancy <FileText className="h-5 w-5" />
+            <p className="text-slate-700 font-semibold">No active vacancies yet</p>
+            <p className="text-slate-400 text-sm mt-1 mb-6">Post your first tuition vacancy to attract teachers.</p>
+            <Link to="/admin/create-post" className="btn-primary">
+              <PlusCircle className="h-4 w-4" /> Post Vacancy
             </Link>
           </div>
         )}

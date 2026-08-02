@@ -1,8 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SectionCard from "../../components/ui/SectionCard";
+import StatCard from "../../components/ui/StatCard";
+import PageHeader from "../../components/ui/PageHeader";
 import { adminApi } from "../../features/admin/api";
-import { Users, Shield, Ban, CheckCircle2, UserCog } from "lucide-react";
+import { Users, ShieldCheck, Ban, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+
+const roleBadge = {
+  Admin:   "badge-indigo",
+  Teacher: "badge-blue",
+  Parent:  "badge-slate",
+};
 
 const UserManagementPage = () => {
   const queryClient = useQueryClient();
@@ -40,93 +48,120 @@ const UserManagementPage = () => {
   };
 
   if (isLoading) {
-    return <div className="p-12 text-center text-slate-500">Loading users...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="spinner text-primary-600" />
+      </div>
+    );
   }
 
-  const activeCount = users?.filter(u => u.isActive).length ?? 0;
+  const activeCount = users?.filter((u) => u.isActive).length ?? 0;
   const suspendedCount = (users?.length ?? 0) - activeCount;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
-        <div className="flex items-center gap-3 mb-2">
-          <Users className="h-6 w-6" />
-          <h1 className="text-3xl font-bold">User Management</h1>
-        </div>
-        <p className="text-blue-100">Manage all platform users, roles, and permissions</p>
+    <div className="space-y-6 animate-fade-in pb-8">
+      <PageHeader
+        title="User Management"
+        subtitle="Manage all platform users, roles, and permissions"
+        icon={Users}
+      />
+
+      {/* Summary cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="Total Users"    value={users?.length ?? 0} accent="indigo"  icon={Users}       subtitle="Registered accounts" />
+        <StatCard label="Active Users"   value={activeCount}         accent="emerald" icon={CheckCircle2} subtitle="Currently active"    />
+        <StatCard label="Suspended"      value={suspendedCount}      accent="rose"    icon={Ban}          subtitle="Blocked accounts"    />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <SectionCard title="Total Users" className="text-center">
-          <div className="text-4xl font-bold text-orange-600 mb-2">{users?.length ?? 0}</div>
-          <p className="text-sm text-slate-500">Registered users</p>
-        </SectionCard>
-        <SectionCard title="Active Users" className="text-center">
-          <div className="text-4xl font-bold text-green-600 mb-2">{activeCount}</div>
-          <p className="text-sm text-slate-500">Currently active</p>
-        </SectionCard>
-        <SectionCard title="Suspended" className="text-center">
-          <div className="text-4xl font-bold text-red-600 mb-2">{suspendedCount}</div>
-          <p className="text-sm text-slate-500">Suspended accounts</p>
-        </SectionCard>
-      </div>
-
-      <SectionCard title="All Users">
+      {/* Table */}
+      <SectionCard title="All Users" subtitle={`${users?.length ?? 0} registered`} noPadding>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="py-4 px-4 font-semibold text-slate-700">Name</th>
-                <th className="py-4 px-4 font-semibold text-slate-700">Email</th>
-                <th className="py-4 px-4 font-semibold text-slate-700">Role</th>
-                <th className="py-4 px-4 font-semibold text-slate-700">Status</th>
-                <th className="py-4 px-4 font-semibold text-slate-700 text-right">Actions</th>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users?.map((user) => (
-                <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-4">
-                    <div className="font-medium text-slate-900">{user.fullName}</div>
-                    <div className="text-xs text-slate-400">Joined {new Date(user.createdAtUtc).toLocaleDateString()}</div>
+                <tr key={user.id}>
+                  {/* Name + avatar */}
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {user.fullName?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900 text-sm">{user.fullName}</p>
+                        <p className="text-xs text-slate-400">
+                          Joined {new Date(user.createdAtUtc).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="py-4 px-4 text-slate-600">{user.email}</td>
-                  <td className="py-4 px-4">
+
+                  <td className="text-slate-500 text-sm">{user.email}</td>
+
+                  {/* Role selector */}
+                  <td>
                     <select
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
                       disabled={updating === user.id}
-                      className="bg-slate-100 border-none rounded-lg text-sm font-medium py-1 px-2 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      className="input !py-1.5 !px-2.5 !text-xs w-auto min-w-[100px] disabled:opacity-50"
                     >
                       <option value="Admin">Admin</option>
                       <option value="Parent">Parent</option>
                       <option value="Teacher">Teacher</option>
                     </select>
                   </td>
-                  <td className="py-4 px-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                      user.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      <div className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      {user.isActive ? 'Active' : 'Suspended'}
+
+                  {/* Status badge */}
+                  <td>
+                    <span className={user.isActive ? "badge-green" : "badge-red"}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
+                      {user.isActive ? "Active" : "Suspended"}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-right">
+
+                  {/* Toggle action */}
+                  <td className="text-right">
                     <button
                       onClick={() => handleStatusToggle(user)}
                       disabled={updating === user.id}
-                      className={`p-2 rounded-xl transition-all duration-200 ${
-                        user.isActive 
-                          ? 'text-red-600 hover:bg-red-50' 
-                          : 'text-green-600 hover:bg-green-50'
-                      } disabled:opacity-50`}
-                      title={user.isActive ? 'Suspend User' : 'Activate User'}
+                      className={`btn text-xs px-3 py-1.5 rounded-lg disabled:opacity-50 ${
+                        user.isActive
+                          ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                          : "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100"
+                      }`}
+                      title={user.isActive ? "Suspend User" : "Activate User"}
                     >
-                      {user.isActive ? <Ban className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                      {updating === user.id ? (
+                        <span className="spinner h-3.5 w-3.5" />
+                      ) : user.isActive ? (
+                        <><Ban className="h-3.5 w-3.5" /> Suspend</>
+                      ) : (
+                        <><CheckCircle2 className="h-3.5 w-3.5" /> Activate</>
+                      )}
                     </button>
                   </td>
                 </tr>
               ))}
+
+              {(!users || users.length === 0) && (
+                <tr>
+                  <td colSpan={5}>
+                    <div className="empty-state">
+                      <Users className="h-10 w-10 text-slate-300 mb-3" />
+                      <p className="font-semibold text-slate-600">No users found</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
