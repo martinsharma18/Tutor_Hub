@@ -37,6 +37,14 @@ const UserManagementPage = () => {
     },
   });
 
+  const approveTeacherMutation = useMutation({
+    mutationFn: (teacherProfileId) => adminApi.approveTeacher(teacherProfileId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users", "admin-dashboard", "admin-teachers-list"] });
+      setUpdating(null);
+    },
+  });
+
   const handleStatusToggle = (user) => {
     setUpdating(user.id);
     statusMutation.mutate({ userId: user.id, isActive: !user.isActive });
@@ -122,32 +130,55 @@ const UserManagementPage = () => {
 
                   {/* Status badge */}
                   <td>
-                    <span className={user.isActive ? "badge-green" : "badge-red"}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
-                      {user.isActive ? "Active" : "Suspended"}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={user.isActive ? "badge-green" : "badge-red"}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
+                        Account: {user.isActive ? "Active" : "Suspended"}
+                      </span>
+                      {user.role === "Teacher" && user.teacherProfileId && (
+                        <span className={user.isTeacherApproved ? "badge-indigo" : "badge-amber"}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${user.isTeacherApproved ? "bg-indigo-500" : "bg-amber-500"}`} />
+                          Profile: {user.isTeacherApproved ? "Approved" : "Pending"}
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Toggle action */}
                   <td className="text-right">
-                    <button
-                      onClick={() => handleStatusToggle(user)}
-                      disabled={updating === user.id}
-                      className={`btn text-xs px-3 py-1.5 rounded-lg disabled:opacity-50 ${
-                        user.isActive
-                          ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                          : "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100"
-                      }`}
-                      title={user.isActive ? "Suspend User" : "Activate User"}
-                    >
-                      {updating === user.id ? (
-                        <span className="spinner h-3.5 w-3.5" />
-                      ) : user.isActive ? (
-                        <><Ban className="h-3.5 w-3.5" /> Suspend</>
-                      ) : (
-                        <><CheckCircle2 className="h-3.5 w-3.5" /> Activate</>
+                    <div className="flex items-center justify-end gap-2">
+                      {user.role === "Teacher" && user.teacherProfileId && !user.isTeacherApproved && (
+                        <button
+                          onClick={() => {
+                            setUpdating(user.id);
+                            approveTeacherMutation.mutate(user.teacherProfileId);
+                          }}
+                          disabled={updating === user.id}
+                          className="btn-success text-xs px-2.5 py-1.5 rounded-lg disabled:opacity-50"
+                          title="Approve Teacher Profile"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Approve Profile
+                        </button>
                       )}
-                    </button>
+                      <button
+                        onClick={() => handleStatusToggle(user)}
+                        disabled={updating === user.id}
+                        className={`btn text-xs px-3 py-1.5 rounded-lg disabled:opacity-50 ${
+                          user.isActive
+                            ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                            : "bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100"
+                        }`}
+                        title={user.isActive ? "Suspend User" : "Activate User"}
+                      >
+                        {updating === user.id ? (
+                          <span className="spinner h-3.5 w-3.5" />
+                        ) : user.isActive ? (
+                          <><Ban className="h-3.5 w-3.5" /> Suspend</>
+                        ) : (
+                          <><CheckCircle2 className="h-3.5 w-3.5" /> Activate</>
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

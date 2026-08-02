@@ -126,14 +126,22 @@ public class AdminService : IAdminService
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         var users = await _userRepository.ListAsync(null, cancellationToken);
-        return users.Select(u => new UserDto
-        {
-            Id = u.Id,
-            Email = u.Email,
-            FullName = u.FullName,
-            Role = u.Role.ToString(),
-            IsActive = u.IsActive,
-            CreatedAtUtc = u.CreatedAtUtc
+        var teacherProfiles = await _teacherProfileRepository.ListAsync(null, cancellationToken);
+        var profileMap = teacherProfiles.ToDictionary(tp => tp.UserId);
+
+        return users.Select(u => {
+            profileMap.TryGetValue(u.Id, out var tp);
+            return new UserDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FullName = u.FullName,
+                Role = u.Role.ToString(),
+                IsActive = u.IsActive,
+                CreatedAtUtc = u.CreatedAtUtc,
+                TeacherProfileId = tp?.Id,
+                IsTeacherApproved = tp?.IsApproved
+            };
         }).ToList();
     }
 
