@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import SectionCard from "../../components/ui/SectionCard";
 import PageHeader from "../../components/ui/PageHeader";
 import { adminApi } from "../../features/admin/api";
+import { searchApi } from "../../features/search/api";
 import { UserCheck, CheckCircle2, XCircle, Eye } from "lucide-react";
 
 const TeacherApprovalPage = () => {
@@ -12,7 +13,7 @@ const TeacherApprovalPage = () => {
 
   const { data: searchData, isLoading } = useQuery({
     queryKey: ["admin-teachers-list"],
-    queryFn: () => fetch("/api/search/teachers").then((res) => res.json()),
+    queryFn: () => searchApi.teachers({ pageSize: 100 }),
   });
 
   const approveMutation = useMutation({

@@ -4,6 +4,7 @@ public class AdminDashboardSummary
 {
     public int TotalUsers { get; set; }
     public int TotalTeachers { get; set; }
+    public int PendingTeachers { get; set; }
     public int AvailableVacancies { get; set; }
     public int ClosedVacancies { get; set; }
     public decimal TotalCommissionEarned { get; set; }

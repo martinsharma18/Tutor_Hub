@@ -8,7 +8,7 @@ import { adminApi } from "../../features/admin/api";
 import { postsApi } from "../../features/posts/api";
 import {
   Users, DollarSign, Briefcase, MessageSquare, FileText,
-  CheckCircle2, PlusCircle, ArrowRight, LayoutDashboard,
+  CheckCircle2, PlusCircle, ArrowRight, LayoutDashboard, Clock,
 } from "lucide-react";
 
 const AdminDashboardPage = () => {
@@ -25,15 +25,16 @@ const AdminDashboardPage = () => {
   const stats = [
     { label: "Total Users",        value: summary?.totalUsers ?? 0,       accent: "indigo", icon: Users,     subtitle: "Registered accounts" },
     { label: "Total Teachers",     value: summary?.totalTeachers ?? 0,    accent: "blue",   icon: Users,     subtitle: "Active profiles"      },
+    { label: "Pending Approval",   value: summary?.pendingTeachers ?? 0,  accent: "amber",  icon: Clock,     subtitle: "Awaiting review"      },
     { label: "Open Vacancies",     value: summary?.availableVacancies ?? 0, accent: "emerald", icon: Briefcase, subtitle: "Current openings"   },
-    { label: "Platform Earnings",  value: `$${(summary?.totalCommissionEarned ?? 0).toFixed(2)}`, accent: "amber", icon: DollarSign, subtitle: "Total commission" },
+    { label: "Platform Earnings",  value: `$${(summary?.totalCommissionEarned ?? 0).toFixed(2)}`, accent: "orange", icon: DollarSign, subtitle: "Total commission" },
   ];
 
   const quickActions = [
     { label: "Post Vacancy",       to: "/admin/create-post",    icon: PlusCircle,   color: "text-primary-600 bg-primary-50",   desc: "Create a new tuition opening"          },
     { label: "Manage Vacancies",   to: "/admin/posts",          icon: Briefcase,    color: "text-blue-600 bg-blue-50",         desc: `${summary?.availableVacancies ?? 0} active` },
     { label: "Applications",       to: "/admin/applications",   icon: MessageSquare, color: "text-rose-600 bg-rose-50",         desc: "Review submitted applications"         },
-    { label: "Teacher Approval",   to: "/admin/teachers",       icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50",   desc: "Approve pending teachers"              },
+    { label: "Teacher Approval",   to: "/admin/teachers",       icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50",   desc: "Approve pending teachers", badge: summary?.pendingTeachers ?? 0 },
   ];
 
   return (
@@ -45,7 +46,7 @@ const AdminDashboardPage = () => {
       />
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
@@ -62,8 +63,15 @@ const AdminDashboardPage = () => {
                 to={action.to}
                 className="group flex flex-col gap-3 p-5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-card-md transition-all duration-200"
               >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
-                  <Icon className="h-5 w-5" />
+                <div className="flex items-start justify-between">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color}`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  {action.badge > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+                      {action.badge}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-slate-800 text-sm group-hover:text-primary-700 transition-colors">

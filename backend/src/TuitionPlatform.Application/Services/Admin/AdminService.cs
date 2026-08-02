@@ -45,11 +45,13 @@ public class AdminService : IAdminService
         var users = await _userRepository.ListAsync(null, cancellationToken);
         var posts = await _tuitionPostRepository.ListAsync(null, cancellationToken);
         var payments = await _paymentRepository.ListAsync(null, cancellationToken);
+        var teachers = await _teacherProfileRepository.ListAsync(null, cancellationToken);
 
         return new AdminDashboardSummary
         {
             TotalUsers = users.Count,
             TotalTeachers = users.Count(u => u.Role == UserRole.Teacher),
+            PendingTeachers = teachers.Count(t => !t.IsApproved),
             AvailableVacancies = posts.Count(p => p.Status == TuitionPostStatus.Approved || p.Status == TuitionPostStatus.Open),
             ClosedVacancies = posts.Count(p => p.Status == TuitionPostStatus.Closed),
             TotalCommissionEarned = payments.Where(p => p.Status == PaymentStatus.Paid).Sum(p => p.CommissionAmount),
