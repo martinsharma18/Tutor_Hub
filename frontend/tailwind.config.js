@@ -7,40 +7,80 @@ export default {
   theme: {
     extend: {
       colors: {
-        // True indigo as primary accent (trust + education)
+        // Royal gold/brass range for primary (admin, login, active states)
         primary: {
-          50:  "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+          50:  "#fdf3e3",
+          100: "#ebd7b4",
+          200: "#e2c99a",
+          300: "#d4bc93",
+          400: "#b08866",
+          500: "#8b5e3c",
+          600: "#774f32",
+          700: "#6e4a2e",
+          800: "#553720",
+          900: "#3b2a1a",
         },
-        // Warm amber for highlights/CTA
+        // Complementary bright gold for brand accent
         brand: {
-          50:  "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
+          50:  "#f7ede0",
+          100: "#f5ede0",
+          200: "#ebd7b4",
+          300: "#d4bc93",
+          400: "#b08866",
+          500: "#8b5e3c",
+          600: "#774f32",
+          700: "#6e4a2e",
+          800: "#553720",
+          900: "#3b2a1a",
         },
-        // Dark sidebar color
+        // Overrides Tailwind's standard orange to make all orange elements gold
+        orange: {
+          50:  "#fdf3e3",
+          100: "#f5ede0",
+          200: "#ebd7b4",
+          300: "#d4bc93",
+          400: "#b08866",
+          500: "#8b5e3c", // main gold/accent
+          600: "#774f32", // dark gold
+          700: "#6e4a2e",
+          800: "#553720",
+          900: "#3b2a1a",
+        },
+        // Overrides Tailwind's standard amber for bright gold highlights
+        amber: {
+          50:  "#fdf8f2",
+          100: "#f5ede0",
+          200: "#ebd7b4",
+          300: "#d4bc93",
+          400: "#a37d5f",
+          500: "#8b5e3c", // bright gold
+          600: "#774f32",
+          700: "#6e4a2e",
+          800: "#553720",
+          900: "#3b2a1a",
+        },
+        // Warm taupe/cream slate override to shift all backgrounds/texts/borders to match teacherdata theme
+        slate: {
+          50:  "#faf8f5",
+          100: "#f2e8d9", // --border-light
+          200: "#e8d9c4", // --border
+          300: "#d6c5af",
+          400: "#b8a090", // --text-subtle
+          500: "#8a7060", // --text-muted
+          600: "#70594a",
+          700: "#554336",
+          800: "#3b2a1a", // --text-main
+          900: "#22180f",
+          950: "#0f0b07",
+        },
+        // Dark sidebar color matching the deep bronze/brown values
         sidebar: {
-          DEFAULT: "#0f172a",
-          hover:   "#1e293b",
-          active:  "#1e293b",
-          border:  "#1e293b",
-          text:    "#94a3b8",
-          "text-active": "#f8fafc",
+          DEFAULT: "#22180f",
+          hover:   "#3b2a1a",
+          active:  "#3b2a1a",
+          border:  "#3b2a1a",
+          text:    "#b8a090",
+          "text-active": "#faf8f5",
         },
       },
       fontFamily: {
