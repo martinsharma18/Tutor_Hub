@@ -56,7 +56,9 @@ const Footer = () => {
             ))}
             <Link to="/contact" className="text-xs font-bold text-slate-500 hover:text-orange-600 transition-colors">Contact</Link>
           </div>
-
+          <div>
+            <p>sdfghgfdsdf</p>
+          </div>
           {/* Social Links */}
           <div className="flex gap-4">
             {socialLinks.map((social) => {
