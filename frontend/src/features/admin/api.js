@@ -11,6 +11,7 @@ export const adminApi = {
     apiClient.post("/admin/teachers/feature", payload).then((res) => res.data),
   getTeacherDetails: (teacherProfileId) =>
     apiClient.get(`/admin/teachers/${teacherProfileId}`).then((res) => res.data),
+  getTeachers: () => apiClient.get("/admin/teachers").then((res) => res.data),
   getUsers: () => apiClient.get("/admin/users").then((res) => res.data),
   updateUserStatus: (userId, isActive) =>
     apiClient.patch(`/admin/users/${userId}/status`, isActive, { headers: { "Content-Type": "application/json" } }).then((res) => res.data),

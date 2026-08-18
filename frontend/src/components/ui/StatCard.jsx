@@ -1,54 +1,58 @@
 import clsx from "clsx";
-import { TrendingUp, Users, DollarSign, FileText } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
-const accentMap = {
-  blue: "from-blue-50 to-blue-100 border-blue-200 text-blue-700",
-  emerald: "from-emerald-50 to-emerald-100 border-emerald-200 text-emerald-700",
-  amber: "from-amber-50 to-amber-100 border-amber-200 text-amber-700",
-  rose: "from-rose-50 to-rose-100 border-rose-200 text-rose-700",
-  orange: "from-orange-50 to-orange-100 border-orange-200 text-orange-700",
+const accentStyles = {
+  blue:    { icon: "bg-blue-50    text-blue-600",    dot: "bg-blue-500"    },
+  emerald: { icon: "bg-emerald-50 text-emerald-600", dot: "bg-emerald-500" },
+  amber:   { icon: "bg-amber-50   text-amber-600",   dot: "bg-amber-500"   },
+  rose:    { icon: "bg-rose-50    text-rose-600",    dot: "bg-rose-500"    },
+  indigo:  { icon: "bg-primary-50 text-primary-600", dot: "bg-primary-500" },
+  orange:  { icon: "bg-orange-50  text-orange-600",  dot: "bg-orange-500"  },
 };
 
-const iconMap = {
-  blue: TrendingUp,
-  emerald: Users,
-  amber: FileText,
-  rose: DollarSign,
-  orange: DollarSign,
-};
+const StatCard = ({
+  label,
+  value,
+  subtitle,
+  icon: Icon,
+  accent = "indigo",
+  trend,          // e.g. "+12%"
+  trendUp,        // boolean — true = green, false = red
+}) => {
+  const styles = accentStyles[accent] ?? accentStyles.indigo;
 
-const StatCard = ({ label, value, trend, accent = "orange", icon: CustomIcon }) => {
-  const Icon = CustomIcon || iconMap[accent] || TrendingUp;
-  
   return (
-    <div className="glass-panel group relative p-6 overflow-hidden">
-      <div className={clsx(
-        "absolute top-0 right-0 w-32 h-32 rounded-full -mr-10 -mt-10 blur-2xl opacity-50 transition-transform duration-500 group-hover:scale-150",
-        accentMap[accent] || accentMap.orange
-      )}></div>
-      
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className={clsx(
-            "p-3.5 rounded-2xl bg-white shadow-sm border border-white/50 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110",
-            `text-${accent}-600`
+    <div className="card p-5 flex flex-col gap-4 hover:shadow-card-md transition-shadow duration-200">
+      {/* Top row: icon + trend */}
+      <div className="flex items-start justify-between">
+        <div className={clsx("flex h-10 w-10 items-center justify-center rounded-xl", styles.icon)}>
+          {Icon && <Icon className="h-5 w-5" />}
+        </div>
+        {trend !== undefined && (
+          <span className={clsx(
+            "flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full",
+            trendUp
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-red-50 text-red-500"
           )}>
-            <Icon className="h-6 w-6" />
-          </div>
-          {trend && (
-            <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-sm text-slate-600">
-              {trend}
-            </span>
-          )}
-        </div>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">{label}</p>
-          <p className="text-4xl font-black text-slate-800 tracking-tight">{value}</p>
-        </div>
+            {trendUp
+              ? <TrendingUp className="h-3 w-3" />
+              : <TrendingDown className="h-3 w-3" />}
+            {trend}
+          </span>
+        )}
+      </div>
+
+      {/* Value + label */}
+      <div>
+        <p className="text-2xl font-bold text-slate-900 leading-tight tracking-tight">
+          {value ?? "—"}
+        </p>
+        <p className="text-sm text-slate-500 font-medium mt-0.5">{label}</p>
+        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
       </div>
     </div>
   );
 };
 
 export default StatCard;
-

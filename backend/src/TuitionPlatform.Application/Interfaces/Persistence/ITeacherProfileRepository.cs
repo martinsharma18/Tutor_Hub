@@ -17,5 +17,7 @@ public interface ITeacherProfileRepository : IGenericRepository<TeacherProfile>
         string? mode,
         int? minYears,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<TeacherProfile>> GetAllWithUsersAsync(CancellationToken cancellationToken = default);
 }
 

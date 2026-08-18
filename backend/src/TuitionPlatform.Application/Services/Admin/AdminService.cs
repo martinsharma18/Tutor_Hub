@@ -45,11 +45,13 @@ public class AdminService : IAdminService
         var users = await _userRepository.ListAsync(null, cancellationToken);
         var posts = await _tuitionPostRepository.ListAsync(null, cancellationToken);
         var payments = await _paymentRepository.ListAsync(null, cancellationToken);
+        var teachers = await _teacherProfileRepository.ListAsync(null, cancellationToken);
 
         return new AdminDashboardSummary
         {
             TotalUsers = users.Count,
             TotalTeachers = users.Count(u => u.Role == UserRole.Teacher),
+            PendingTeachers = teachers.Count(t => !t.IsApproved),
             AvailableVacancies = posts.Count(p => p.Status == TuitionPostStatus.Approved || p.Status == TuitionPostStatus.Open),
             ClosedVacancies = posts.Count(p => p.Status == TuitionPostStatus.Closed),
             TotalCommissionEarned = payments.Where(p => p.Status == PaymentStatus.Paid).Sum(p => p.CommissionAmount),
@@ -124,15 +126,29 @@ public class AdminService : IAdminService
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         var users = await _userRepository.ListAsync(null, cancellationToken);
-        return users.Select(u => new UserDto
-        {
-            Id = u.Id,
-            Email = u.Email,
-            FullName = u.FullName,
-            Role = u.Role.ToString(),
-            IsActive = u.IsActive,
-            CreatedAtUtc = u.CreatedAtUtc
+        var teacherProfiles = await _teacherProfileRepository.ListAsync(null, cancellationToken);
+        var profileMap = teacherProfiles.ToDictionary(tp => tp.UserId);
+
+        return users.Select(u => {
+            profileMap.TryGetValue(u.Id, out var tp);
+            return new UserDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FullName = u.FullName,
+                Role = u.Role.ToString(),
+                IsActive = u.IsActive,
+                CreatedAtUtc = u.CreatedAtUtc,
+                TeacherProfileId = tp?.Id,
+                IsTeacherApproved = tp?.IsApproved
+            };
         }).ToList();
+    }
+
+    public async Task<List<TeacherProfileDto>> GetAllTeachersAsync(CancellationToken cancellationToken = default)
+    {
+        var teachers = await _teacherProfileRepository.GetAllWithUsersAsync(cancellationToken);
+        return teachers.Select(_mapper.Map<TeacherProfileDto>).ToList();
     }
 
     public async Task<UserDto> UpdateUserStatusAsync(Guid userId, bool isActive, CancellationToken cancellationToken = default)

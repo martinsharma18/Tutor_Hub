@@ -72,5 +72,8 @@ public class TeacherProfileRepository : GenericRepository<TeacherProfile>, ITeac
 
         return await query.ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyCollection<TeacherProfile>> GetAllWithUsersAsync(CancellationToken cancellationToken = default)
+        => await DbContext.TeacherProfiles.Include(t => t.User).ToListAsync(cancellationToken);
 }
 

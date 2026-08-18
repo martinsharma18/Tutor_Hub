@@ -8,4 +8,6 @@ public class UserDto
     public string Role { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public DateTime CreatedAtUtc { get; set; }
+    public Guid? TeacherProfileId { get; set; }
+    public bool? IsTeacherApproved { get; set; }
 }

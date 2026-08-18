@@ -1,48 +1,65 @@
-import { LogOut, Bell, Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../store/hooks";
-import { logout } from "../../store/authSlice";
+import { Bell } from "lucide-react";
+import { useLocation } from "react-router-dom";
+
+// Map routes to human-readable page titles
+const pageTitles = {
+  "/admin":              "Dashboard",
+  "/admin/create-post":  "Post Vacancy",
+  "/admin/posts":        "Manage Vacancies",
+  "/admin/applications": "Applications",
+  "/admin/teachers":     "Teacher Management",
+  "/admin/users":        "User Management",
+  "/admin/settings":     "Settings",
+  "/teacher":            "Overview",
+  "/teacher/profile":    "My Profile",
+  "/teacher/applications": "My Applications",
+  "/teacher/demo":       "Demo Requests",
+  "/teacher/payments":   "Payments",
+  "/teacher/messages":   "Messages",
+};
 
 const TopBar = ({ fullName, role }) => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const title = pageTitles[location.pathname] ?? "Dashboard";
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
-  };
+  const initials = fullName
+    ? fullName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    : "U";
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/60 bg-white/60 backdrop-blur-xl px-8 py-4 shadow-sm animate-slide-down">
-      <div className="flex items-center gap-5">
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-orange-500 font-bold opacity-80 mb-0.5">Welcome back</p>
-          <p className="text-xl font-black text-slate-800 tracking-tight">{fullName}</p>
-        </div>
-        <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-orange-100 to-rose-50 rounded-full border border-orange-200 shadow-inner">
-          <span className="text-[11px] font-bold text-orange-700 uppercase tracking-widest">{role}</span>
-        </div>
+    <header className="flex items-center justify-between bg-white border-b border-slate-100 px-6 py-3.5 shadow-sm flex-shrink-0">
+      {/* Page title */}
+      <div>
+        <h1 className="text-lg font-semibold text-slate-900 tracking-tight">{title}</h1>
+        <p className="text-xs text-slate-400 font-medium">
+          Welcome back, <span className="text-slate-600 font-semibold">{fullName}</span>
+        </p>
       </div>
-      <div className="flex items-center gap-4">
-        <button className="p-2.5 rounded-xl text-slate-500 hover:bg-white hover:text-orange-600 transition-all duration-300 hover:shadow-md border border-transparent hover:border-slate-200">
-          <Search className="h-5 w-5" />
-        </button>
-        <button className="relative p-2.5 rounded-xl text-slate-500 hover:bg-white hover:text-orange-600 transition-all duration-300 hover:shadow-md border border-transparent hover:border-slate-200">
+
+      {/* Right controls */}
+      <div className="flex items-center gap-2">
+        {/* Notification bell */}
+        <button className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
         </button>
-        <div className="h-8 w-px bg-slate-200 mx-1"></div>
-        <button
-          onClick={handleLogout}
-          className="btn-premium inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-6 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)]"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline tracking-wide">Logout</span>
-        </button>
+
+        {/* Divider */}
+        <div className="h-6 w-px bg-slate-200 mx-1" />
+
+        {/* Avatar */}
+        <div className="flex items-center gap-2.5 pl-1">
+          <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {initials}
+          </div>
+          <div className="hidden sm:block">
+            <p className="text-sm font-semibold text-slate-800 leading-tight">{fullName}</p>
+            <p className="text-xs text-slate-400">{role}</p>
+          </div>
+        </div>
       </div>
     </header>
   );
 };
 
 export default TopBar;
-
