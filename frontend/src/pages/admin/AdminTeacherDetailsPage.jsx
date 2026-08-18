@@ -46,7 +46,7 @@ const AdminTeacherDetailsPage = () => {
         </div>
         
         <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
-          <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-orange-400 to-rose-500 shadow-inner flex items-center justify-center shrink-0">
+          <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-inner flex items-center justify-center shrink-0">
             <span className="text-5xl font-bold text-white tracking-widest">
               {profile.fullName.charAt(0).toUpperCase()}
             </span>
