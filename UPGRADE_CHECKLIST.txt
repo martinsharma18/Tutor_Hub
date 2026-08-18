@@ -1,0 +1,217 @@
+==================================================================
+UPGRADE CHECKLIST — BEST TUITIONS / TUTOR HUB
+Scope of this pass: wire up Parent = Student as ONE unified role
+(as agreed — no separate "Student" role for now, reuse Parent/ParentProfile),
+plus the broader upgrades needed to make the system feel complete and sellable.
+Generated: 2026-08-18
+==================================================================
+
+HOW TO READ THIS FILE
+  [ ]  = not started
+  Each item names the exact file(s) to touch so nothing is guessed twice.
+  Section order = build order. Do Section 1 fully before touching Section 2, etc.
+
+------------------------------------------------------------------
+SECTION 1 — MAKE "PARENT" A REAL, WORKING ROLE (highest priority)
+------------------------------------------------------------------
+Good news found while auditing: most of the backend ALREADY assumes a "Parent"
+role exists — ApplicationsController, DemoController and PaymentsController all
+already have `[Authorize(Roles = "Parent")]` on the right endpoints, and
+ParentProfile.cs already exists as an entity. The ONLY things missing are:
+the role itself, the repository for it, the register endpoint, and the
+frontend wiring. This is a much smaller job than a new role from scratch.
+
+Backend:
+  [ ] domain: Enums/UserRole.cs
+        Add `Parent = 3` to the enum.
+  [ ] application: Interfaces/Persistence/IParentProfileRepository.cs (NEW)
+        Mirror ITeacherProfileRepository — GetByUserIdAsync, AddAsync, etc.
+  [ ] infrastructure: Persistence/Repositories/ParentProfileRepository.cs (NEW)
+        Implement the interface (mirror TeacherProfileRepository.cs).
+  [ ] infrastructure: Persistence/Configurations/ParentProfileConfiguration.cs (NEW)
+        EF Core config for ParentProfile (mirror TeacherProfileConfiguration.cs).
+  [ ] infrastructure: TuitionPlatformDbContext.cs
+        Add `DbSet<ParentProfile> ParentProfiles`.
+  [ ] infrastructure: DependencyInjection.cs
+        Register IParentProfileRepository -> ParentProfileRepository.
+  [ ] infrastructure: new EF Core migration (e.g. `AddParentProfile`) once the
+        above is in place — run `dotnet ef migrations add` from TuitionPlatform.Api.
+  [ ] application: DTOs/Auth/RegisterParentRequest.cs (NEW)
+        Fields: FullName, Email, Password, PhoneNumber, City, Area,
+        Latitude?, Longitude? (matches RegisterParentPage.jsx form exactly).
+  [ ] application: Validators/RegisterParentRequestValidator.cs (NEW)
+        Mirror RegisterTeacherRequestValidator.cs.
+  [ ] application: Interfaces/Services/IAuthService.cs
+        Add `Task<AuthResponse> RegisterParentAsync(RegisterParentRequest, CancellationToken)`.
+  [ ] application: Services/Auth/AuthService.cs
+        Implement RegisterParentAsync (mirror RegisterTeacherAsync): create
+        User with Role = UserRole.Parent, then create + save a ParentProfile.
+        Inject IParentProfileRepository into the constructor.
+  [ ] api: Controllers/AuthController.cs
+        Add `POST /api/auth/parent/register` -> _authService.RegisterParentAsync.
+  [ ] application: Mapping/ApplicationProfile.cs
+        Confirm/add a ParentProfile -> ParentProfileDto mapping if one gets
+        added in Section 3 (dashboard "my profile" screen).
+
+Frontend:
+  [ ] frontend/src/features/auth/api.js
+        Add `registerParent: (payload) => apiClient.post("/auth/parent/register", payload)...`
+        (RegisterParentPage.jsx already calls `authApi.registerParent` — it's
+        just missing from this file today, so the page currently 404s/throws.)
+  [ ] frontend/src/App.jsx
+        Import RegisterParentPage and add route `path="/register/parent"`.
+        Add a `/parent` dashboard route group (same ProtectedRoute + DashboardLayout
+        pattern used for /teacher and /admin) — see Section 3 for the pages that
+        go inside it.
+  [ ] Landing/Register pages: add a visible "I'm a Parent/Student" link next to
+        the existing "Register as Teacher" link (check LandingPage.jsx /
+        LoginPage.jsx for where teacher registration is currently promoted).
+  [ ] frontend/src/store: confirm authSlice already stores `role` from the
+        login/register response and that ProtectedRoute.jsx's `roles={[...]}`
+        check will accept "Parent" (it takes an array already, so this should
+        just work once the backend returns Role: "Parent").
+
+------------------------------------------------------------------
+SECTION 2 — UNLOCK SELF-SERVE ACTIONS FOR PARENT ROLE
+------------------------------------------------------------------
+These backend endpoints exist but currently either hard-block non-Admins or
+were built assuming Admin does everything on the parent's behalf. Adjust the
+authorization/business rules so a logged-in Parent can act for themselves.
+
+  [ ] api: Controllers/TuitionPostsController.cs — `Create` action
+        Currently `[Authorize(Roles = "Admin")]`. Change to
+        `[Authorize(Roles = "Admin,Parent")]`.
+  [ ] application: Services/TuitionPosts/TuitionPostService.cs — `CreateAsync`
+        Currently throws ForbiddenException unless `user.Role == UserRole.Admin`.
+        Update the check to allow `UserRole.Admin || UserRole.Parent`.
+        Decide the workflow: does a Parent-created post go straight to
+        `Open` (current Admin behavior) or to a `Pending` review state that
+        Admin must approve first (safer against spam)? Recommendation: keep
+        it simple for now — Parent posts go `Open` immediately, but add a
+        lightweight Admin "flag/remove post" action instead of a pre-approval
+        queue, so the product doesn't feel gated for real users.
+  [ ] application: DTOs/TuitionPosts/CreateTuitionPostRequest.cs
+        Confirm ParentPhoneNumber can default to the logged-in Parent's own
+        phone (pre-fill from profile) rather than requiring manual re-entry.
+  [ ] Confirm `GET /api/tuition-posts/me` (already `[Authorize]`, no role
+        restriction) correctly returns a Parent's own posts — should work
+        as-is since it filters by CreatedByUserId, just verify after Section 1.
+  [ ] ApplicationsController / DemoController / PaymentsController — already
+        correctly scoped to "Parent" role; no code change needed here, just
+        re-test end-to-end once Parent accounts can actually be created.
+
+------------------------------------------------------------------
+SECTION 3 — BUILD THE PARENT/STUDENT DASHBOARD (frontend)
+------------------------------------------------------------------
+Mirror the existing teacher dashboard pattern (frontend/src/pages/teacher/*)
+under a new frontend/src/pages/parent/ folder:
+
+  [ ] ParentDashboardPage.jsx — overview: active posts count, new applications,
+        upcoming demos, quick "Post a requirement" CTA.
+  [ ] ParentPostsPage.jsx — list of the parent's own tuition posts
+        (uses postsApi.myPosts, which already exists) with status + edit/close.
+  [ ] ParentCreatePostPage.jsx — the self-serve version of
+        AdminCreatePostPage.jsx (reuse its form component if one exists) that
+        calls postsApi.create as a Parent instead of Admin.
+  [ ] ParentApplicationsPage.jsx — for a selected post, list teacher
+        applications (applicationsApi.listForPost) with accept/reject
+        (applicationsApi.updateStatus) — mirror TeacherApplicationsPage.jsx
+        logic but from the requester's side.
+  [ ] ParentDemoRequestsPage.jsx — request a demo with a teacher (demoApi.create)
+        and view status of requested demos (demoApi.parentRequests — already
+        implemented in features/demo/api.js).
+  [ ] ParentPaymentsPage.jsx — view commission/payment history
+        (paymentsApi.parentPayments — already implemented).
+  [ ] ParentMessagesPage.jsx — reuse the existing messaging feature
+        (features/messages/api.js) the same way TeacherMessagesPage.jsx does.
+  [ ] ParentProfilePage.jsx — edit City/Area/phone/name (needs a
+        `GET/PUT /api/parent/profile`-style endpoint — not built yet, add a
+        small ParentController.cs + IParentService if you want this in scope
+        now, or defer to Section 5).
+  [ ] frontend/src/App.jsx — add all of the above under the same
+        `<Route element={<ProtectedRoute roles={["Parent"]}>}>` group used for
+        Teacher routes, nested inside the shared DashboardLayout.
+  [ ] frontend/src/components/layout — check Sidebar/Nav component(s) for a
+        role-based menu switch (likely already switches Teacher vs Admin menus
+        — add a third "Parent" branch with links to the pages above).
+
+------------------------------------------------------------------
+SECTION 4 — VERIFY / TEST END TO END
+------------------------------------------------------------------
+  [ ] Register a new Parent account from the UI -> confirm JWT comes back with
+        Role: "Parent" and lands on /parent dashboard.
+  [ ] Create a tuition post as that Parent -> confirm it appears in
+        `/tuition-posts/open` for teachers to see.
+  [ ] Register/login as a Teacher, apply to that post -> confirm the Parent
+        sees the application in ParentApplicationsPage.
+  [ ] Accept the application as Parent -> confirm status flows correctly
+        through ApplicationWorkflowService.
+  [ ] Request + confirm a demo between that Parent and Teacher.
+  [ ] Exchange messages both directions.
+  [ ] Trigger a commission Payment record (Admin action) and confirm it shows
+        up under both `/payments/parent` and `/payments/teacher`.
+  [ ] Confirm Admin's existing UserManagementPage.jsx correctly displays
+        Parent users too (check it isn't hardcoded to only list Teacher/Admin).
+
+------------------------------------------------------------------
+SECTION 5 — BROADER SYSTEM UPGRADES (do after Sections 1-4 are solid)
+------------------------------------------------------------------
+These make the product feel modern/dynamic and are the ones that matter most
+if you intend to actually sell or launch this publicly. Roughly ordered by
+impact-to-effort ratio:
+
+  [ ] Real-time messaging: add a SignalR hub (e.g. `/hubs/chat`) so
+        ParentMessagesPage / TeacherMessagesPage update live instead of on
+        refresh. Backend: new Hub class + map it in Program.cs. Frontend: add
+        @microsoft/signalr client in features/messages.
+  [ ] Notifications: at minimum, transactional email (new application, demo
+        confirmed, post approved/flagged, payment recorded) via SendGrid/SMTP.
+        Add an INotificationService in Application + a concrete implementation
+        in Infrastructure, call it from the relevant *Service classes
+        (ApplicationWorkflowService, DemoService, PaymentService).
+  [ ] Ratings & reviews: new `Review` entity (ReviewerUserId, TeacherProfileId,
+        Rating 1-5, Comment, PostId, CreatedAtUtc) + endpoint to submit after a
+        completed demo/tuition + display average rating on teacher cards
+        (TeachersPage.jsx, search results) and TeacherProfileDto.
+  [ ] Real payment gateway: integrate Razorpay (or Stripe) for actual online
+        payment of the commission (replace the current "mark as paid with a
+        free-text reference" flow in PaymentsController/PaymentService) and,
+        longer-term, for a parent-to-teacher fee/escrow flow.
+  [ ] OTP/phone verification at both Teacher and Parent registration — big
+        trust signal in this market, relatively low effort with something like
+        Twilio Verify or MSG91.
+  [ ] Dynamic master data instead of free-text: Subject, Board/ClassLevel, and
+        City/Area currently free-text strings on TuitionPost/TeacherProfile.
+        Turn into managed lookup tables editable from an Admin screen so
+        dropdowns are consistent and search/filter actually works reliably.
+  [ ] Geo/proximity search: TuitionPost and TeacherProfile already store
+        Latitude/Longitude (GeoLocation value object exists) but nothing
+        queries by distance yet. Add a "teachers near me" / "posts near me"
+        query (Postgres earthdistance/postgis extension, or a simple haversine
+        calc in SQL/LINQ for current scale).
+  [ ] File uploads: move CvUrl (and future profile photo / ID proof / degree
+        certs) to real storage (Azure Blob Storage or S3-compatible) with a
+        signed-URL upload flow instead of a bare string field.
+  [ ] Automated tests: no test project currently exists under backend/src —
+        add an xUnit project and cover AuthService, PaymentService, and
+        ApplicationWorkflowService first since those touch money/permissions.
+  [ ] Admin CMS touches: manage landing page testimonials/banners/FAQ content
+        from the Admin panel instead of hardcoded JSX, using the same
+        AdminSettings-style "dynamic config" pattern already used for
+        commission rate.
+  [ ] Housekeeping: delete the leftover placeholder files
+        backend/src/TuitionPlatform.Domain/Class1.cs and
+        backend/src/TuitionPlatform.Application/Class1.cs.
+
+------------------------------------------------------------------
+NOTES / DECISIONS ASSUMED FOR THIS PASS
+------------------------------------------------------------------
+  - Parent and Student are treated as ONE role ("Parent") for now, reusing the
+    existing ParentProfile entity — no separate Student entity/role is being
+    introduced in this pass.
+  - Section 1+2 together are the minimum to make the platform an actual
+    two-sided marketplace instead of Admin-brokered lead generation.
+  - Section 5 is what turns it from "functionally correct" into "feels like a
+    real, modern, sellable product" — tackle in the order listed, or reorder
+    based on which gap you hear about most from real users first.
+==================================================================

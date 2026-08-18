@@ -1,0 +1,641 @@
+===================================================================================
+              MASTER UPGRADE PLAN — BEST TUITIONS / TUTOR HUB
+        Full system + API audit, gap analysis, and market-readiness roadmap
+                          Generated: 2026-08-18
+===================================================================================
+
+This file REPLACES and CONSOLIDATES the three earlier files:
+  - SYSTEM_ANALYSIS_AND_ROADMAP.txt
+  - UPGRADE_CHECKLIST.txt
+  - ADDITIONAL_IMPROVEMENTS.txt
+Everything in those files is included here, plus a much deeper API/service-level
+audit that found several issues the earlier passes missed.
+
+Decisions carried forward from your instructions:
+  * Parent and Student are ONE role ("Parent"). No separate Student entity.
+  * Real payment-gateway integration is DEFERRED (kept at the bottom, not removed).
+
+-----------------------------------------------------------------------------------
+                        PART 0 — HONEST VERDICT UP FRONT
+-----------------------------------------------------------------------------------
+The architecture is genuinely good. Clean Architecture layering (Domain /
+Application / Infrastructure / Api) is done properly, DTOs and validators are
+separated, the repository + unit-of-work pattern is consistent, and the React
+frontend uses a sensible modern stack. The foundation is solid — you are NOT
+starting over.
+
+But the system is NOT market-ready today, for three reasons:
+
+  1. HALF THE MARKETPLACE DOESN'T EXIST. The "Parent" role is referenced in five
+     places across the backend but was never added to the UserRole enum. Nobody
+     can register as a parent/student. The platform is currently Admin + Teacher
+     only.
+
+  2. THE REVENUE MODEL LEAKS. Your whole business model is "teacher pays
+     commission to unlock the parent's contact details." That paywall is
+     bypassable through a second, unmasked API endpoint (details in Part 2,
+     item C1). Anyone technical could use the platform for free today.
+
+  3. SECRETS ARE HARDCODED IN THE REPO. An admin email and plaintext password
+     sit in Program.cs, committed to git, and get force-reset on every deploy.
+
+Fix those three and you have a real product. Everything else in this file is
+improvement on top of a working base.
+
+-----------------------------------------------------------------------------------
+                  PART 1 — WHAT EXISTS TODAY (FULL API INVENTORY)
+-----------------------------------------------------------------------------------
+STACK
+  Backend  : .NET 8 · Clean Architecture · EF Core (PostgreSQL) · JWT + refresh
+             tokens · FluentValidation · AutoMapper · BCrypt
+  Frontend : React 19 · Vite · Redux Toolkit · React Query · React Hook Form
+             + Zod · TailwindCSS · Axios · react-hot-toast
+  Hosting  : Render (API, render.yaml) · Vercel (frontend) · Docker available
+
+DOMAIN ENTITIES (9 mapped)
+  User · TeacherProfile · ParentProfile(*) · TuitionPost · TeacherApplication ·
+  DemoRequest · Payment · Message · AdminSettings · RefreshToken · FeaturedTeacher(*)
+  (*) ParentProfile and FeaturedTeacher exist as classes but are NOT registered
+      as DbSets and have no EF configuration — they are effectively dead code.
+
+COMPLETE API SURFACE (every endpoint in the system)
+
+  AUTH  /api/auth
+    POST  /teacher/register           anon      works
+    POST  /login                      anon      works
+    POST  /refresh                    anon      works on backend, NEVER CALLED by frontend
+    -- MISSING: /parent/register, /forgot-password, /reset-password,
+                /verify-email, /change-password, /logout (refresh revoke)
+
+  TEACHERS  /api/teachers      [Authorize(Roles="Teacher")]
+    GET   /me                         own profile
+    PUT   /me                         update own profile
+    POST  /applications               apply to a post
+    GET   /applications               list own applications  <-- LEAKS PHONE (Part 2 C1)
+
+  TUITION POSTS  /api/tuition-posts
+    POST  /                           Admin only  <-- blocks parent self-serve
+    POST  /{id}/approve               Admin       dead code (service comment says deprecated)
+    PATCH /{id}/status                Admin
+    GET   /me                         any auth    own posts
+    GET   /open                       anon        public vacancy list
+    GET   /pending                    Admin       ALWAYS RETURNS EMPTY (hardcoded)
+    GET   /all                        Admin       no real pagination
+
+  APPLICATIONS  /api/applications     [Authorize(Roles="Parent,Admin")]
+    GET   /posts/{postId}             applications for a post
+    PATCH /{applicationId}            shortlist / reject / hire
+    -- MISSING ENDPOINT: VerifyPaymentAsync() exists in the service but is NOT
+       exposed by any controller. The contact-unlock flow is therefore broken.
+
+  DEMO  /api/demo
+    POST  /                           Parent      unreachable (role doesn't exist)
+    PATCH /{demoId}                   Parent,Teacher
+    GET   /parent                     Parent      unreachable
+    GET   /teacher                    Teacher     works
+
+  MESSAGES  /api/messages             [Authorize]
+    POST  /                           send message
+    GET   /{otherUserId}              fetch one conversation
+    -- MISSING: inbox / conversation list, mark-as-read, unread count
+
+  PAYMENTS  /api/payments
+    POST  /commission                 Admin
+    POST  /{paymentId}/pay            Teacher     self-declared, no verification
+    GET   /teacher                    Teacher
+    GET   /parent                     Parent      unreachable (role doesn't exist)
+
+  SEARCH  /api/search
+    GET   /teachers                   anon        filters + crude geo bounding box
+
+  ADMIN  /api/admin                   [Authorize(Roles="Admin")]
+    GET   /dashboard                  loads ENTIRE tables to count rows
+    GET   /settings   PUT /settings   commission config (good dynamic pattern)
+    POST  /teachers/{id}/approve
+    GET   /teachers/{id}
+    POST  /teachers/feature           can only feature, never UN-feature
+    GET   /users                      no pagination
+    GET   /teachers                   no pagination
+    GET   /applications               no pagination
+    PATCH /users/{id}/status
+    PATCH /users/{id}/role
+    DELETE /teachers/{id}             hard delete, no soft delete
+
+  HEALTH
+    GET   /health                     exists (correcting an earlier note that said it didn't)
+
+FRONTEND ROUTES
+  Public   : / · /about · /contact · /teachers · /vacancies · /login · /register/teacher
+  Teacher  : /teacher · /profile · /applications · /demo · /payments · /messages
+  Admin    : /admin · /create-post · /posts · /settings · /pending-posts · /users
+             · /teachers · /teachers/:id · /analytics · /applications
+  Parent   : NONE. RegisterParentPage.jsx exists on disk but is not imported or
+             routed in App.jsx, and the authApi.registerParent function it calls
+             does not exist in features/auth/api.js — so the page would crash
+             even if you reached it.
+
+-----------------------------------------------------------------------------------
+        PART 2 — CRITICAL BLOCKERS (fix before ANY public launch or sale)
+-----------------------------------------------------------------------------------
+
+--- A. SECURITY: HARDCODED ADMIN CREDENTIALS IN SOURCE CONTROL ---------------------
+  A1. backend/src/TuitionPlatform.Api/Program.cs contains a real admin email and
+      the plaintext password "Martin#123", committed to git. Anyone with repo
+      access — or anyone who ever forks/clones it — owns your production admin
+      account.
+  A2. Worse: the startup block RE-HASHES AND OVERWRITES that password on EVERY
+      application start. If you change your admin password in the UI, the next
+      deploy silently resets it back. You can never actually secure this account.
+  FIX: Move the seed email/password to environment variables. Only create the
+      admin if missing; never overwrite an existing password. Rotate the current
+      password immediately, and treat "Martin#123" as permanently compromised
+      since it is in git history.
+
+--- B. SECURITY: CORS ALLOWS EVERY ORIGIN, WITH CREDENTIALS ------------------------
+  B1. Program.cs sets .SetIsOriginAllowed(origin => true) together with
+      .AllowCredentials() — in ALL environments, not just development (the code
+      comment says "development" but there is no environment check around it).
+      Any website on the internet can call your API in a logged-in user's
+      browser context.
+  FIX: Read an allow-list of origins from configuration. Permissive CORS only
+      inside app.Environment.IsDevelopment().
+
+--- C. BUSINESS LOGIC: THE COMMISSION PAYWALL IS BYPASSABLE ------------------------
+  C1. THE BIGGEST FUNCTIONAL BUG IN THE SYSTEM.
+      There are TWO implementations of "get my applications":
+        - ApplicationWorkflowService.GetMyApplicationsAsync()  -> masks the
+          parent's phone number as "********" unless payment is verified. Correct.
+        - TeacherService.GetMyApplicationsAsync()              -> maps the DTO
+          directly with NO masking at all.
+      TeachersController's GET /api/teachers/applications is wired to the SECOND,
+      UNMASKED one. A teacher calls that endpoint and receives every parent's
+      real phone number for free — completely bypassing the commission model
+      that the entire business depends on.
+  C2. Compounding this: ApplicationWorkflowService.VerifyPaymentAsync() — the
+      admin action that is supposed to UNLOCK contact details after payment —
+      is not exposed by any controller. So the legitimate unlock path doesn't
+      work, while the illegitimate one does.
+  FIX: Delete the duplicate unmasked method from TeacherService (or make it
+      delegate to the masking one), route the controller to the masked
+      implementation, and add POST /api/applications/{id}/verify-payment
+      for Admin.
+
+--- D. THE PARENT ROLE DOES NOT EXIST ----------------------------------------------
+  D1. Domain/Enums/UserRole.cs defines only { Teacher = 1, Admin = 2 }.
+  D2. But five endpoints already carry [Authorize(Roles = "Parent")] —
+      all four DemoController parent endpoints, GET /api/payments/parent, and the
+      class-level attribute on ApplicationsController. Every one of them is
+      permanently unreachable dead code.
+  D3. ParentProfile.cs exists as an entity but has no DbSet, no EF
+      configuration, no repository, and no migration — it is not in the database.
+  D4. No POST /api/auth/parent/register endpoint and no RegisterParentAsync in
+      AuthService.
+  D5. Frontend: RegisterParentPage.jsx is not routed, and calls a nonexistent
+      authApi.registerParent function.
+  Net effect: your "two-sided marketplace" has one side. Full fix plan in Part 4A.
+
+--- E. SESSIONS DIE AND CANNOT REFRESH --------------------------------------------
+  E1. The backend implements POST /api/auth/refresh correctly and returns a
+      refresh token on login. The frontend stores it in localStorage and then
+      NEVER USES IT. apiClient.js literally contains the comment "We could add
+      refresh token logic here if needed."
+  E2. On any 401, apiClient immediately dispatches logout(). So the moment an
+      access token expires, the user is kicked out mid-task with no warning.
+  FIX: Add a response interceptor that, on 401, calls /auth/refresh once, retries
+      the original request, and only logs out if the refresh itself fails.
+      Guard against concurrent refresh storms with a single in-flight promise.
+
+-----------------------------------------------------------------------------------
+              PART 3 — BROKEN, HALF-BUILT, OR DEAD FEATURES
+-----------------------------------------------------------------------------------
+  1.  AutoApproveTeachers setting is dead. It exists in AdminSettings, is
+      editable in the admin UI, and is returned by GET /api/admin/settings —
+      but AuthService.RegisterTeacherAsync hardcodes IsApproved = false and
+      never reads it. Toggling it in the UI does nothing.
+
+  2.  Unapproved teachers can still apply to posts. TeacherService.
+      ApplyToPostAsync never checks profile.IsApproved. The entire approval
+      workflow can be skipped.
+
+  3.  Teachers can apply to the same post unlimited times. No duplicate check
+      in ApplyToPostAsync — a teacher can spam a parent's inbox with 100
+      applications to one post.
+
+  4.  Anyone can message anyone. MessageService.SendMessageAsync only checks
+      that both users exist. There is no check that they share an application,
+      post, or demo. A teacher can DM every parent on the platform directly —
+      another route around the commission paywall, and an open spam channel.
+
+  5.  Message.IsRead is never set to true anywhere in the codebase. There is no
+      mark-as-read endpoint, no unread count, and no inbox/conversation-list
+      endpoint. You can only open a chat if you already know the other person's
+      GUID — the messaging feature has no entry point.
+
+  6.  Teachers self-certify payment. POST /api/payments/{id}/pay lets a teacher
+      set their own payment to Paid with a free-text reference. No admin
+      approval, no proof, no verification. Combined with C1, commission is
+      effectively optional.
+
+  7.  No payment state-machine guard. MarkAsPaidAsync will happily re-mark an
+      already-Paid or Refunded payment as Paid again.
+
+  8.  GET /api/tuition-posts/pending is hardcoded to return an empty list, and
+      POST /{id}/approve is marked "deprecated" in a code comment — yet the
+      admin UI still has a PendingPostsPage.jsx wired to them. That admin screen
+      is permanently blank by design.
+
+  9.  Post status model is inconsistent. TuitionPostStatus has Pending/Approved/
+      Open/Closed, but CreateAsync always writes Open, the Pending query returns
+      nothing, and ApplyToPostAsync checks for "Approved OR Open". Two of the
+      four states are unreachable. Decide on the real lifecycle and delete the rest.
+
+  10. FeatureTeacher is one-way. AdminService.FeatureTeacherAsync only ever sets
+      IsFeatured = true. There is no un-feature action. Also, a whole
+      FeaturedTeacher entity exists but is never used by this code path.
+
+  11. RemoveTeacherAsync is a hard delete with no soft-delete flag. Payments and
+      applications reference that teacher; the FKs use DeleteBehavior.Restrict,
+      so this will either throw at runtime or destroy financial history.
+
+  12. UpdateUserRoleAsync has no guardrails. An admin can demote themselves, and
+      nothing prevents removing the last remaining admin — locking everyone out.
+
+  13. Approved teachers can silently change their identity. UpdateProfileAsync
+      lets a teacher rewrite qualifications, subjects, and experience after
+      approval without resetting IsApproved or notifying an admin.
+
+  14. AdminService.GetTeacherDetailsAsync fetches the profile via GetByIdAsync,
+      which does NOT .Include(t => t.User). Any mapping that reads User.FullName
+      or User.Email will come back null on the admin teacher-details screen.
+
+  15. Leftover scaffolding: Class1.cs still present in Domain, Application, and
+      Infrastructure projects.
+
+-----------------------------------------------------------------------------------
+              PART 4 — WHAT TO BUILD (MARKET-READY FEATURE SET)
+-----------------------------------------------------------------------------------
+
+=== 4A. THE PARENT/STUDENT SIDE — file-by-file build plan =========================
+This is the single highest-value block of work in this document. Note how much
+already exists: the authorization attributes, the demo/payment endpoints, the
+frontend API functions, and the registration page are all already written. You
+are connecting existing pieces, not building from zero.
+
+BACKEND
+  [ ] Domain/Enums/UserRole.cs
+        Add  Parent = 3
+  [ ] Application/Interfaces/Persistence/IParentProfileRepository.cs   (NEW)
+        Mirror ITeacherProfileRepository (GetByUserIdAsync, AddAsync, ...)
+  [ ] Infrastructure/Persistence/Repositories/ParentProfileRepository.cs (NEW)
+        Mirror TeacherProfileRepository.cs
+  [ ] Infrastructure/Persistence/Configurations/ParentProfileConfiguration.cs (NEW)
+        Mirror TeacherProfileConfiguration.cs; add the User 1:1 relationship
+  [ ] Infrastructure/Persistence/TuitionPlatformDbContext.cs
+        Add  DbSet<ParentProfile> ParentProfiles
+        Add  modelBuilder.ApplyConfiguration(new ParentProfileConfiguration())
+  [ ] Infrastructure/DependencyInjection.cs
+        Register IParentProfileRepository -> ParentProfileRepository
+  [ ] Application/DTOs/Auth/RegisterParentRequest.cs                   (NEW)
+        FullName, Email, Password, PhoneNumber, City, Area, Latitude?, Longitude?
+        (matches the existing RegisterParentPage.jsx form exactly)
+  [ ] Application/Validators/RegisterParentRequestValidator.cs         (NEW)
+  [ ] Application/Interfaces/Services/IAuthService.cs
+        Add RegisterParentAsync(...)
+  [ ] Application/Services/Auth/AuthService.cs
+        Implement RegisterParentAsync — mirror RegisterTeacherAsync, create the
+        User with Role = UserRole.Parent, then create + save a ParentProfile.
+        Inject IParentProfileRepository.
+  [ ] Api/Controllers/AuthController.cs
+        Add POST /api/auth/parent/register
+  [ ] EF migration: dotnet ef migrations add AddParentProfileAndParentRole
+
+FRONTEND
+  [ ] features/auth/api.js
+        Add registerParent: (payload) => apiClient.post("/auth/parent/register", ...)
+        (RegisterParentPage.jsx already calls this — it is simply missing)
+  [ ] App.jsx
+        Import + route /register/parent
+        Add a /parent/* route group using the same ProtectedRoute +
+        DashboardLayout pattern as /teacher
+  [ ] components/layout/ — add a "Parent" branch to the role-based sidebar menu
+  [ ] LandingPage / LoginPage — add a visible "I'm a Parent / Student" CTA next
+        to the existing teacher registration link
+
+NEW PARENT DASHBOARD PAGES  (mirror pages/teacher/* into pages/parent/*)
+  [ ] ParentDashboardPage.jsx     overview: active posts, new applications,
+                                  upcoming demos, "Post a requirement" CTA
+  [ ] ParentCreatePostPage.jsx    self-serve version of AdminCreatePostPage
+  [ ] ParentPostsPage.jsx         own posts (postsApi.myPosts already exists)
+  [ ] ParentApplicationsPage.jsx  applications received; shortlist/reject/hire
+                                  (applicationsApi already exists)
+  [ ] ParentDemoRequestsPage.jsx  request + track demos (demoApi already exists)
+  [ ] ParentPaymentsPage.jsx      payment history (paymentsApi already exists)
+  [ ] ParentMessagesPage.jsx      reuse the messages feature
+  [ ] ParentProfilePage.jsx       needs a new ParentController + IParentService
+                                  (GET/PUT /api/parent/profile)
+
+UNBLOCK SELF-SERVE POSTING
+  [ ] Api/Controllers/TuitionPostsController.cs — Create action:
+        [Authorize(Roles="Admin")]  ->  [Authorize(Roles="Admin,Parent")]
+  [ ] Application/Services/TuitionPosts/TuitionPostService.cs — CreateAsync:
+        the guard currently throws "Only admins can create vacancies."
+        Allow Admin OR Parent.
+        RECOMMENDATION: let parent posts go straight to Open (no pre-approval
+        queue — gating real users kills conversion), and instead give Admin a
+        "flag / remove post" action for abuse.
+  [ ] Pre-fill ParentPhoneNumber from the logged-in parent's profile instead of
+        asking them to type it again.
+
+=== 4B. TRUST & CONVERSION (what actually makes people use a marketplace) =========
+  [ ] RATINGS & REVIEWS — currently completely absent, and it is the #1 trust
+      signal in this market. New Review entity (ReviewerUserId, TeacherProfileId,
+      Rating 1-5, Comment, TuitionPostId, CreatedAtUtc), submit-after-demo
+      endpoint, average rating + review count on TeacherProfileDto, displayed on
+      teacher cards and search results, sortable in search.
+  [ ] PUBLIC SHAREABLE TEACHER PROFILE — /teachers/{slug} with photo, bio,
+      subjects, qualifications, rating, verified badge. Doubles as your SEO
+      surface and as something teachers will share themselves (free marketing).
+  [ ] VERIFICATION BADGES — surface ID-verified / degree-verified / phone-verified
+      status. Parents choose verified tutors; teachers will pay for the badge.
+  [ ] PHONE/OTP VERIFICATION at registration for both sides. In this market this
+      is close to table stakes.
+  [ ] RESPONSE-RATE / LAST-ACTIVE indicators on teacher cards.
+
+=== 4C. COMMUNICATION ============================================================
+  [ ] REAL-TIME CHAT — add a SignalR hub (/hubs/chat), map it in Program.cs, add
+      @microsoft/signalr on the frontend. Today chat is REST-only and feels dead.
+  [ ] INBOX / CONVERSATION LIST endpoint (see Part 3 item 5 — the feature
+      currently has no entry point at all).
+  [ ] MARK-AS-READ + UNREAD BADGE (Message.IsRead already exists, unused).
+  [ ] AUTHORIZATION ON MESSAGING — only allow chat between users with a shared
+      application/post/demo (fixes Part 3 item 4).
+  [ ] NOTIFICATIONS — add INotificationService in Application + an SMTP/SendGrid
+      implementation in Infrastructure. Trigger on: new application received,
+      application shortlisted/hired, demo requested/confirmed, teacher approved,
+      payment recorded, new message. Email at minimum; WhatsApp/SMS
+      (MSG91/Twilio) has much higher open rates in this market.
+  [ ] IN-APP NOTIFICATION CENTRE with a bell icon + unread count.
+
+=== 4D. SEARCH & DISCOVERY =======================================================
+  [ ] TRUE DISTANCE SEARCH. Current geo filter is a crude lat/lng bounding box
+      (a square, not a circle) with no distance sorting — a teacher 40 km away
+      diagonally can outrank one 5 km away. Use PostgreSQL earthdistance/PostGIS,
+      or a haversine calculation, and return + sort by actual distance.
+  [ ] RELEVANCE RANKING — currently results come back in arbitrary DB order.
+      Rank by rating, verification, experience, distance, and activity.
+  [ ] FULL-TEXT SEARCH — subject matching is a naive string .Contains(), so
+      "Maths" won't match "Mathematics". Use pg_trgm or normalized subject IDs.
+  [ ] SAVED SEARCHES + EMAIL ALERTS ("notify me when a Class 10 Physics post
+      appears in my area") — strong retention driver for teachers.
+  [ ] FILTERS the UI should expose: price range, rating, gender preference,
+      availability, verified-only, online/offline/hybrid.
+
+=== 4E. FILES & MEDIA ============================================================
+  [ ] Real upload pipeline (Azure Blob / S3-compatible) with signed URLs.
+      Today the only file support is a bare CvUrl string on TeacherProfile.
+  [ ] Profile photos (teacher cards look empty and untrustworthy without them).
+  [ ] ID proof + degree certificate uploads feeding the verification workflow.
+  [ ] File size/type validation and virus scanning before anything is served.
+
+-----------------------------------------------------------------------------------
+                PART 5 — MAKING THE SYSTEM TRULY DYNAMIC
+-----------------------------------------------------------------------------------
+You asked specifically for a "totally dynamic" system. Here is what is currently
+hardcoded or unmanageable, and what to do about it.
+
+  [ ] SUBJECTS, CLASSES, AND BOARDS ARE FREE-TEXT STRINGS.
+      TeacherProfile.Subjects and .Classes are comma-ish strings; TuitionPost
+      uses free-text Subject/ClassLevel. This is why search uses .Contains()
+      and why "Maths"/"Mathematics"/"maths " are three different subjects.
+      FIX: Subject, Board, and ClassLevel lookup tables + join tables, managed
+      from an admin screen, served to the frontend as dropdown data via API.
+      This single change fixes search quality, filtering, and analytics at once.
+
+  [ ] CITIES AND AREAS ARE FREE-TEXT. Same problem — breaks location filtering
+      and makes "teachers in Delhi" unreliable. Needs a managed location table.
+
+  [ ] LANDING PAGE CONTENT IS HARDCODED IN JSX. Hero copy, testimonials,
+      featured teachers, FAQ, stats — all require a code deploy to change.
+      FIX: a small CMS-style content API + admin editor, following the same
+      pattern AdminSettings already uses successfully.
+
+  [ ] NO FEATURE FLAGS. No way to turn a feature on/off per environment or roll
+      one out gradually. Add a simple flags table + config endpoint.
+
+  [ ] EMAIL/SMS TEMPLATES should be data, not hardcoded strings, so you can edit
+      wording without a deploy.
+
+  [ ] WHAT IS ALREADY DONE RIGHT: AdminSettings (commission percentage, flat
+      amount, payment instructions) is exactly the right pattern — admin-editable
+      business config read at runtime. Extend that pattern everywhere above.
+      (Just make sure the settings you expose actually get read — see Part 3
+      item 1, where AutoApproveTeachers is editable but ignored.)
+
+-----------------------------------------------------------------------------------
+                    PART 6 — PERFORMANCE & SCALE
+-----------------------------------------------------------------------------------
+These are fine at 50 users and fatal at 5,000. Worth fixing before you demo the
+platform to a buyer with a seeded database.
+
+  [ ] PAGINATION IS FAKE ACROSS THE WHOLE SYSTEM. SearchService, TuitionPost-
+      Service.GetMyPostsAsync, and GetAllPostsAsync all load EVERY matching row
+      from the database with .ToListAsync() and then apply .Skip()/.Take() in
+      C# memory. Page 1 of 10 results costs you the entire table.
+      FIX: push Skip/Take into the IQueryable before it hits the database.
+
+  [ ] ADMIN DASHBOARD LOADS FOUR ENTIRE TABLES TO PRODUCE SEVEN NUMBERS.
+      GetDashboardAsync pulls all users, all posts, all payments, and all
+      teacher profiles into memory just to .Count() them.
+      FIX: use CountAsync()/SumAsync() database aggregates.
+
+  [ ] GET /api/admin/users, /admin/teachers, /admin/applications have NO
+      pagination at all. These will time out.
+
+  [ ] ONLY THREE DATABASE INDEXES EXIST in the entire schema (User.Email,
+      RefreshToken(UserId,Token), Message.ConversationKey). Missing indexes on
+      columns queried constantly:
+        TeacherProfile   : IsApproved, City, Area, UserId
+        TuitionPost      : Status, City, CreatedByUserId, CreatedAtUtc
+        TeacherApplication: TeacherProfileId, TuitionPostId, Status
+        Payment          : TeacherId, ParentId, Status
+      Add these in a migration — it is a cheap, large win.
+
+  [ ] NO RESPONSE CACHING on public endpoints (/tuition-posts/open,
+      /search/teachers) — every anonymous visitor hits the database directly.
+
+  [ ] NO ASYNC/BACKGROUND JOB INFRASTRUCTURE. Once emails and SMS exist, they
+      must not run inline in the request. Add Hangfire or a hosted background
+      service before wiring notifications.
+
+  [ ] FRONTEND: no code splitting or lazy loading of routes; no image
+      optimization; the whole admin bundle ships to anonymous visitors.
+
+-----------------------------------------------------------------------------------
+              PART 7 — SECURITY, COMPLIANCE, AND OPERATIONS
+-----------------------------------------------------------------------------------
+SECURITY (beyond the Part 2 blockers)
+  [ ] NO RATE LIMITING anywhere. /api/auth/login can be brute-forced without
+      limit. .NET 8 has AddRateLimiter built in — apply it globally and
+      aggressively on auth endpoints.
+  [ ] NO ACCOUNT LOCKOUT after repeated failed logins, and no CAPTCHA.
+  [ ] NO PASSWORD RESET / FORGOT PASSWORD FLOW AT ALL. A user who forgets their
+      password is permanently locked out. This alone blocks a public launch.
+  [ ] NO EMAIL VERIFICATION FLOW. User.EmailVerified exists and is always false
+      for real users (only the seeded admin gets true).
+  [ ] LOGIN LEAKS ACCOUNT EXISTENCE. AuthService throws NotFoundException("User")
+      for an unknown email but ForbiddenException("Invalid credentials") for a
+      wrong password — so an attacker can enumerate which emails are registered.
+      Return one identical error for both cases.
+  [ ] NO LOGOUT / REFRESH-TOKEN REVOCATION endpoint. Tokens stay valid after
+      the user "logs out" client-side.
+  [ ] RequireHttpsMetadata = false is set unconditionally in Program.cs.
+  [ ] TOKENS IN localStorage are XSS-readable. Acceptable for now, but
+      httpOnly cookies are the stronger pattern.
+  [ ] NO SECRET SCAN of git history. Given Part 2 A1, do one.
+
+AUDIT TRAIL
+  [ ] NO RECORD OF WHO DID WHAT. Nothing logs which admin approved a teacher,
+      changed a post's status, altered the commission rate, or verified a
+      payment. Once real money and real disputes exist, this is essential.
+      Add an AuditLog entity (ActorUserId, Action, EntityType, EntityId,
+      TimestampUtc, Details) written from every admin mutation.
+
+TESTING
+  [ ] ZERO TESTS EXIST. There is no test project anywhere in the solution.
+      Priority order: AuthService (register/login/refresh), Application-
+      WorkflowService (the hire + commission + masking logic — this is where
+      the C1 bug lives and where a regression costs you money), PaymentService
+      (commission math), TuitionPostService (status rules).
+      Add xUnit + an in-memory or Testcontainers Postgres fixture.
+
+LEGAL / COMPLIANCE
+  [ ] No Terms of Service, no Privacy Policy. You are storing names, emails,
+      phone numbers, national IDs (TeacherProfile.NationalId!), and GPS
+      coordinates. Publishing these documents is a legal prerequisite, and
+      payment gateways will require them at KYC.
+  [ ] NationalId is stored in plaintext with no encryption and no access
+      restriction — treat it as sensitive PII or drop the field.
+  [ ] No consent checkbox at registration.
+  [ ] No account-deletion / data-export flow.
+
+OPERATIONS
+  [ ] NO ERROR TRACKING. A production exception is invisible unless a user
+      reports it. Add Sentry (or equivalent) to both API and frontend.
+  [ ] NO STRUCTURED LOGGING. Add Serilog with request correlation IDs.
+  [ ] /health exists — good. Hook it to an uptime monitor with alerting.
+  [ ] MIGRATIONS RUN AUTOMATICALLY ON STARTUP and rethrow on failure, so a bad
+      migration takes the API down entirely. Fine for now; move to a controlled
+      migration step before you have real customers.
+  [ ] VERIFY DATABASE BACKUPS are enabled on Render and actually test a restore.
+  [ ] SWAGGER IS DEVELOPMENT-ONLY. Consider exposing it behind auth in staging
+      so buyers/integrators can explore the API.
+
+DISCOVERABILITY & POLISH
+  [ ] SEO: no meta tags, no sitemap.xml, no robots.txt, no per-teacher indexable
+      URLs. For a marketplace where "home tutor near me" is the main acquisition
+      channel, this is a large missed opportunity.
+  [ ] NO OPEN GRAPH TAGS — links shared on WhatsApp (the dominant sharing
+      channel for this audience) render as bare grey boxes.
+  [ ] ACCESSIBILITY + MOBILE: needs a real-device pass. Most users here are on
+      phones. Check keyboard nav and contrast on the dark sidebar theme.
+  [ ] EMPTY STATES say "no data" instead of guiding a first-time user.
+  [ ] NO IN-DASHBOARD SUPPORT LINK. ContactPage exists publicly but a confused
+      logged-in user has no path to help.
+
+-----------------------------------------------------------------------------------
+                    PART 8 — PRIORITIZED ROADMAP
+-----------------------------------------------------------------------------------
+
+PHASE 0 — STOP THE BLEEDING  (do this week; roughly 1-2 days)
+  1. Move admin seed credentials to env vars; stop overwriting the password;
+     rotate the compromised one.                              [Part 2 A]
+  2. Lock down CORS to an allow-list outside development.     [Part 2 B]
+  3. Fix the phone-number masking bypass and expose the
+     verify-payment endpoint.                                 [Part 2 C]
+  4. Add rate limiting on auth endpoints.                     [Part 7]
+  5. Make login errors identical for unknown-email and
+     wrong-password.                                          [Part 7]
+  Outcome: the platform is no longer trivially exploitable and your revenue
+  model actually holds.
+
+PHASE 1 — COMPLETE THE MARKETPLACE  (1-2 weeks)
+  6. Full Parent role: enum, entity, repo, config, migration,
+     register endpoint, frontend wiring.                      [Part 4A]
+  7. Parent dashboard pages.                                  [Part 4A]
+  8. Allow parents to create their own posts.                 [Part 4A]
+  9. Implement token refresh on the frontend.                 [Part 2 E]
+  10. Fix the dead-feature list: enforce IsApproved on apply,
+      block duplicate applications, honour AutoApproveTeachers,
+      resolve the post status model.                          [Part 3]
+  Outcome: an actual two-sided marketplace that a real parent can use unaided.
+
+PHASE 2 — TRUST & ENGAGEMENT  (2-3 weeks)
+  11. Ratings and reviews.                                    [Part 4B]
+  12. Notifications (email first, then WhatsApp/SMS).         [Part 4C]
+  13. Real-time chat + inbox + unread counts + messaging
+      authorization.                                          [Part 4C]
+  14. Phone/OTP verification and verification badges.         [Part 4B]
+  15. Password reset and email verification flows.            [Part 7]
+  Outcome: the product feels alive and trustworthy instead of manual.
+
+PHASE 3 — SCALE & QUALITY  (2-3 weeks)
+  16. Real database-level pagination everywhere.              [Part 6]
+  17. Add the missing indexes.                                [Part 6]
+  18. Dashboard aggregate queries instead of full table loads.[Part 6]
+  19. Dynamic Subject/Class/Board/City master data.           [Part 5]
+  20. Proper distance search and relevance ranking.           [Part 4D]
+  21. File storage pipeline + profile photos.                 [Part 4E]
+  22. Test suite for auth, applications, and payments.        [Part 7]
+  23. Audit log.                                              [Part 7]
+  Outcome: holds up under a real user load and under buyer scrutiny.
+
+PHASE 4 — GO TO MARKET  (ongoing)
+  24. SEO, Open Graph, public teacher profiles, sitemap.      [Part 7 / 4B]
+  25. Terms of Service, Privacy Policy, consent, data deletion.[Part 7]
+  26. Error tracking, structured logging, uptime alerts.      [Part 7]
+  27. Landing page CMS + feature flags.                       [Part 5]
+  28. Onboarding flows and better empty states.               [Part 7]
+  29. Referral programme.
+  30. Analytics/telemetry so you can show real usage numbers
+      to a buyer or investor.
+
+PHASE 5 — DEFERRED (explicitly not now, per your direction)
+  31. Real payment gateway (Razorpay recommended for the Indian market;
+      Stripe for international). Would replace the current self-declared
+      "mark as paid" flow with genuine online commission collection,
+      webhook verification, invoices, and receipts.
+  32. Monetization tiers built on top of that: featured-listing purchase,
+      pay-per-lead unlock, parent subscriptions.
+  33. Multi-tenancy (TenantId on core entities) — only if you decide to sell
+      this as white-label SaaS to other tuition agencies rather than running
+      it yourself. Much cheaper to add now than to retrofit later, so make
+      that strategic call before Phase 3.
+
+-----------------------------------------------------------------------------------
+              PART 9 — QUICK WINS (each under ~30 minutes)
+-----------------------------------------------------------------------------------
+  [ ] Delete the three leftover Class1.cs files.
+  [ ] Add Parent = 3 to the UserRole enum (unblocks five dead endpoints).
+  [ ] Add registerParent to features/auth/api.js (the page already calls it).
+  [ ] Route /register/parent in App.jsx (the page already exists, fully built).
+  [ ] Add the missing database indexes in one migration.
+  [ ] Wrap the permissive CORS policy in an IsDevelopment() check.
+  [ ] Make login return one identical error for both failure cases.
+  [ ] Add a duplicate-application guard in ApplyToPostAsync.
+  [ ] Add an IsApproved check in ApplyToPostAsync.
+  [ ] Add .Include(t => t.User) to the admin teacher-details lookup.
+
+-----------------------------------------------------------------------------------
+                              CLOSING NOTE
+-----------------------------------------------------------------------------------
+The gap between where this is and where it needs to be is smaller than it looks,
+because a surprising amount of the missing work is already half-written and just
+disconnected — the Parent authorization attributes, the ParentProfile entity, the
+registration page, the refresh endpoint, the payment-verification service method,
+the masking logic. In several places the correct implementation already exists
+and simply isn't wired up.
+
+Do Phase 0 immediately regardless of anything else — those are live security and
+revenue holes. Then Phase 1 turns this from a lead-generation tool into an actual
+marketplace, which is the thing you can sell.
+===================================================================================
