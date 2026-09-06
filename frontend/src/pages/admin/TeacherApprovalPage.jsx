@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import SectionCard from "../../components/ui/SectionCard";
 import PageHeader from "../../components/ui/PageHeader";
 import { adminApi } from "../../features/admin/api";
@@ -15,16 +16,21 @@ const TeacherApprovalPage = () => {
     queryFn: adminApi.getTeachers,
   });
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-teachers-list"] });
+  };
+
   const approveMutation = useMutation({
     mutationFn: (id) => adminApi.approveTeacher(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["admin-dashboard", "admin-teachers-list"] }),
+    onSuccess: () => { invalidate(); toast.success("Teacher approved."); },
+    onError: () => toast.error("Could not approve teacher."),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => adminApi.removeTeacher(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["admin-dashboard", "admin-teachers-list"] }),
+    onSuccess: () => { invalidate(); toast.success("Teacher profile deleted."); },
+    onError: () => toast.error("Could not delete teacher."),
   });
 
   if (isLoading) {

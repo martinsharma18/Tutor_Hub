@@ -40,7 +40,9 @@ const UserManagementPage = () => {
   const approveTeacherMutation = useMutation({
     mutationFn: (teacherProfileId) => adminApi.approveTeacher(teacherProfileId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users", "admin-dashboard", "admin-teachers-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-teachers-list"] });
       setUpdating(null);
     },
   });
