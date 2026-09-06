@@ -65,19 +65,6 @@ public class TuitionPostService : ITuitionPostService
         return dto;
     }
 
-    public async Task<TuitionPostDto> ApproveAsync(Guid adminUserId, Guid postId, CancellationToken cancellationToken = default)
-    {
-        // deprecated as we don't have pending status anymore
-        var post = await _tuitionPostRepository.GetByIdAsync(postId, cancellationToken)
-                   ?? throw new NotFoundException("Tuition post", postId);
-
-        post.Status = TuitionPostStatus.Open;
-        _tuitionPostRepository.Update(post);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return _mapper.Map<TuitionPostDto>(post);
-    }
-
     public async Task<TuitionPostDto> UpdateStatusAsync(Guid userId, Guid postId, UpdateTuitionPostStatusRequest request, CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetByIdAsync(userId, cancellationToken)
@@ -148,18 +135,6 @@ public class TuitionPostService : ITuitionPostService
         {
             Items = result.Items.Select(_mapper.Map<TuitionPostDto>).ToList(),
             TotalCount = result.TotalCount,
-            Page = request.Page,
-            PageSize = request.PageSize
-        };
-    }
-
-    public async Task<PagedResult<TuitionPostDto>> GetPendingPostsAsync(PagedRequest request, CancellationToken cancellationToken = default)
-    {
-        // Return empty since we don't have pending status anymore
-        return new PagedResult<TuitionPostDto>
-        {
-            Items = new List<TuitionPostDto>(),
-            TotalCount = 0,
             Page = request.Page,
             PageSize = request.PageSize
         };

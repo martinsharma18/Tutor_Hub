@@ -41,7 +41,6 @@ import TeacherAssignmentsPage from "./pages/teacher/TeacherAssignmentsPage";
 import TeacherEarningsPage from "./pages/teacher/TeacherEarningsPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
-import PendingPostsPage from "./pages/admin/PendingPostsPage";
 import UserManagementPage from "./pages/admin/UserManagementPage";
 import TeacherApprovalPage from "./pages/admin/TeacherApprovalPage";
 import AnalyticsPage from "./pages/admin/AnalyticsPage";
@@ -177,10 +176,6 @@ const App = () => {
             <Route
               path="/admin/settings"
               element={<ProtectedRoute roles={["Admin"]}><AdminSettingsPage /></ProtectedRoute>}
-            />
-            <Route
-              path="/admin/pending-posts"
-              element={<ProtectedRoute roles={["Admin"]}><PendingPostsPage /></ProtectedRoute>}
             />
             <Route
               path="/admin/users"

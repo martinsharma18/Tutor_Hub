@@ -36,7 +36,7 @@ const AdminCreatePostPage = () => {
     mutationFn: postsApi.create,
     onSuccess: () => {
       reset();
-      queryClient.invalidateQueries({ queryKey: ["admin-posts", "pending-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-posts"] });
     },
   });
 

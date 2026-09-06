@@ -26,14 +26,6 @@ public class TuitionPostsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("{postId:guid}/approve")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<TuitionPostDto>> Approve(Guid postId, CancellationToken cancellationToken)
-    {
-        var result = await _tuitionPostService.ApproveAsync(User.GetUserId(), postId, cancellationToken);
-        return Ok(result);
-    }
-
     [HttpPatch("{postId:guid}/status")]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TuitionPostDto>> UpdateStatus(Guid postId, UpdateTuitionPostStatusRequest request, CancellationToken cancellationToken)
@@ -55,14 +47,6 @@ public class TuitionPostsController : ControllerBase
     public async Task<ActionResult<PagedResult<TuitionPostDto>>> OpenPosts([FromQuery] PagedRequest request, CancellationToken cancellationToken)
     {
         var result = await _tuitionPostService.GetOpenPostsAsync(request, cancellationToken);
-        return Ok(result);
-    }
-
-    [HttpGet("pending")]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<PagedResult<TuitionPostDto>>> PendingPosts([FromQuery] PagedRequest request, CancellationToken cancellationToken)
-    {
-        var result = await _tuitionPostService.GetPendingPostsAsync(request, cancellationToken);
         return Ok(result);
     }
 
