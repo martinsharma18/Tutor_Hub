@@ -1,3 +1,5 @@
+using TuitionPlatform.Application.DTOs.TuitionPosts;
+
 namespace TuitionPlatform.Application.DTOs.Teachers;
 
 public class TeacherApplicationDto
@@ -19,5 +21,6 @@ public class TeacherApplicationDto
     public bool IsPaymentVerified { get; set; }
     public decimal CommissionAmount { get; set; }
     public string? ParentPhoneNumber { get; set; }
+    public TuitionPostDto? TuitionPost { get; set; }
 }
 

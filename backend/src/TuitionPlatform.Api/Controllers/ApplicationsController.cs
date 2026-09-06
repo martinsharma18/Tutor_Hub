@@ -31,6 +31,15 @@ public class ApplicationsController : ControllerBase
         var result = await _applicationWorkflowService.UpdateStatusAsync(User.GetUserId(), applicationId, request, cancellationToken);
         return Ok(result);
     }
+
+    // Was implemented in the service but never routed, leaving no legitimate way to unlock a
+    // parent's phone number for a teacher after commission payment.
+    [HttpPost("{applicationId:guid}/verify-payment")]
+    public async Task<ActionResult<TeacherApplicationDto>> VerifyPayment(Guid applicationId, CancellationToken cancellationToken)
+    {
+        var result = await _applicationWorkflowService.VerifyPaymentAsync(User.GetUserId(), applicationId, cancellationToken);
+        return Ok(result);
+    }
 }
 
 

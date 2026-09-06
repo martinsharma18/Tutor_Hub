@@ -4,6 +4,10 @@ namespace TuitionPlatform.Application.Interfaces.Services;
 
 public interface IApplicationWorkflowService
 {
+    Task<IReadOnlyCollection<TeacherApplicationDto>> GetMyApplicationsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<TeacherApplicationDto>> GetApplicationsForPostAsync(
         Guid requesterId,
         Guid postId,

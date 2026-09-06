@@ -12,10 +12,12 @@ namespace TuitionPlatform.Api.Controllers;
 public class TeachersController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
+    private readonly IApplicationWorkflowService _applicationWorkflowService;
 
-    public TeachersController(ITeacherService teacherService)
+    public TeachersController(ITeacherService teacherService, IApplicationWorkflowService applicationWorkflowService)
     {
         _teacherService = teacherService;
+        _applicationWorkflowService = applicationWorkflowService;
     }
 
     [HttpGet("me")]
@@ -42,7 +44,9 @@ public class TeachersController : ControllerBase
     [HttpGet("applications")]
     public async Task<ActionResult<IReadOnlyCollection<TeacherApplicationDto>>> ListApplications(CancellationToken cancellationToken)
     {
-        var result = await _teacherService.GetMyApplicationsAsync(User.GetUserId(), cancellationToken);
+        // Routed through the workflow service (not ITeacherService) because only this path
+        // applies ContactVisibility masking to the parent's phone number before payment.
+        var result = await _applicationWorkflowService.GetMyApplicationsAsync(User.GetUserId(), cancellationToken);
         return Ok(result);
     }
 }
