@@ -25,6 +25,11 @@ public interface IPlacementRepository : IGenericRepository<Placement>
     /// commission enforceable.
     /// </summary>
     Task<bool> HasLivePlacementBetweenAsync(Guid parentUserId, Guid teacherUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>Every TuitionPostId that already has a placement — lets the admin applications
+    /// list show "Create Placement" only for hires that haven't been set up yet, without an
+    /// N+1 existence check per row.</summary>
+    Task<IReadOnlyCollection<Guid>> ListPlacedTuitionPostIdsAsync(CancellationToken cancellationToken = default);
 }
 
 public interface IInvoiceRepository : IGenericRepository<Invoice>

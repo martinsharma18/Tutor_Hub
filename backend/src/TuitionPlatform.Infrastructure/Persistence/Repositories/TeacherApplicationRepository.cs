@@ -40,5 +40,16 @@ public class TeacherApplicationRepository : GenericRepository<TeacherApplication
                 .ThenInclude(t => t.User)
             .Include(a => a.TuitionPost)
             .FirstOrDefaultAsync(a => a.Id == applicationId, cancellationToken);
+
+    public async Task<IReadOnlyCollection<TeacherApplication>> ListAllDetailedAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await DbContext.TeacherApplications
+            .Include(a => a.TeacherProfile).ThenInclude(t => t.User)
+            .Include(a => a.TuitionPost)
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
 }
 

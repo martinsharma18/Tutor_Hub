@@ -18,6 +18,7 @@ public class AdminService : IAdminService
     private readonly IPaymentRepository _paymentRepository;
     private readonly IAdminSettingsRepository _adminSettingsRepository;
     private readonly ITeacherApplicationRepository _teacherApplicationRepository;
+    private readonly IPlacementRepository _placementRepository;
     private readonly INotificationService _notificationService;
     private readonly IAuditLogService _auditLogService;
     private readonly IAuditLogRepository _auditLogRepository;
@@ -31,6 +32,7 @@ public class AdminService : IAdminService
         IPaymentRepository paymentRepository,
         IAdminSettingsRepository adminSettingsRepository,
         ITeacherApplicationRepository teacherApplicationRepository,
+        IPlacementRepository placementRepository,
         INotificationService notificationService,
         IAuditLogService auditLogService,
         IAuditLogRepository auditLogRepository,
@@ -43,6 +45,7 @@ public class AdminService : IAdminService
         _paymentRepository = paymentRepository;
         _adminSettingsRepository = adminSettingsRepository;
         _teacherApplicationRepository = teacherApplicationRepository;
+        _placementRepository = placementRepository;
         _notificationService = notificationService;
         _auditLogService = auditLogService;
         _auditLogRepository = auditLogRepository;
@@ -247,8 +250,15 @@ public class AdminService : IAdminService
 
     public async Task<List<TeacherApplicationDto>> GetAllApplicationsAsync(CancellationToken cancellationToken = default)
     {
-        var applications = await _teacherApplicationRepository.ListAsync(null, cancellationToken);
-        return applications.Select(_mapper.Map<TeacherApplicationDto>).ToList();
+        var applications = await _teacherApplicationRepository.ListAllDetailedAsync(cancellationToken);
+        var placedPostIds = (await _placementRepository.ListPlacedTuitionPostIdsAsync(cancellationToken)).ToHashSet();
+
+        return applications.Select(a =>
+        {
+            var dto = _mapper.Map<TeacherApplicationDto>(a);
+            dto.HasPlacement = placedPostIds.Contains(a.TuitionPostId);
+            return dto;
+        }).ToList();
     }
 
     public async Task RemoveTeacherAsync(Guid actorUserId, Guid teacherProfileId, CancellationToken cancellationToken = default)

@@ -63,6 +63,13 @@ public class PlacementRepository : GenericRepository<Placement>, IPlacementRepos
                  && p.TeacherProfile.UserId == teacherUserId
                  && (p.Status == PlacementStatus.Active || p.Status == PlacementStatus.Paused),
             cancellationToken);
+
+    public async Task<IReadOnlyCollection<Guid>> ListPlacedTuitionPostIdsAsync(CancellationToken cancellationToken = default)
+        => await DbContext.Placements
+            .Where(p => p.TuitionPostId.HasValue)
+            .Select(p => p.TuitionPostId!.Value)
+            .Distinct()
+            .ToListAsync(cancellationToken);
 }
 
 public class InvoiceRepository : GenericRepository<Invoice>, IInvoiceRepository
