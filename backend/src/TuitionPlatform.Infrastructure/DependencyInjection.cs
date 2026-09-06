@@ -15,6 +15,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+        services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
+        services.Configure<FileStorageSettings>(configuration.GetSection(FileStorageSettings.SectionName));
 
         var connectionString = GetPostgresConnectionString(configuration);
         services.AddDbContext<TuitionPlatformDbContext>(options =>
@@ -24,6 +26,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITeacherProfileRepository, TeacherProfileRepository>();
+        services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
         services.AddScoped<ITuitionPostRepository, TuitionPostRepository>();
         services.AddScoped<ITeacherApplicationRepository, TeacherApplicationRepository>();
         services.AddScoped<IDemoRequestRepository, DemoRequestRepository>();
@@ -31,9 +34,20 @@ public static class DependencyInjection
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IVerificationTokenRepository, VerificationTokenRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<ILookupItemRepository, LookupItemRepository>();
+        services.AddScoped<IPlacementRepository, PlacementRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<IClassSessionRepository, ClassSessionRepository>();
+        services.AddScoped<IPlacementFeedbackRepository, PlacementFeedbackRepository>();
 
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return services;
     }

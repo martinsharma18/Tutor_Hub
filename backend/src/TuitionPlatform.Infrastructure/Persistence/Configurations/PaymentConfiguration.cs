@@ -21,6 +21,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .WithMany()
             .HasForeignKey(p => p.TeacherId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // ParentId/TeacherId are already indexed via the FK relationships above; Status backs the
+        // admin dashboard's Pending/Paid aggregate counts.
+        builder.HasIndex(p => p.Status);
     }
 }
 

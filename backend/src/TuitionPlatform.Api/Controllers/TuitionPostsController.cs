@@ -19,7 +19,7 @@ public class TuitionPostsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Parent")]
     public async Task<ActionResult<TuitionPostDto>> Create(CreateTuitionPostRequest request, CancellationToken cancellationToken)
     {
         var result = await _tuitionPostService.CreateAsync(User.GetUserId(), request, cancellationToken);

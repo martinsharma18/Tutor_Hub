@@ -7,5 +7,7 @@ public interface IPaymentRepository : IGenericRepository<Payment>
     Task<IReadOnlyCollection<Payment>> GetTeacherPaymentsAsync(Guid teacherId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<Payment>> GetParentPaymentsAsync(Guid parentId, CancellationToken cancellationToken = default);
+
+    Task<decimal> GetTotalPaidCommissionAsync(CancellationToken cancellationToken = default);
 }
 

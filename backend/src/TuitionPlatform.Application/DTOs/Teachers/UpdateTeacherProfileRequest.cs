@@ -25,5 +25,9 @@ public class UpdateTeacherProfileRequest
     public double? Longitude { get; set; }
 
     public decimal? HourlyRate { get; set; }
+
+    public string? CvUrl { get; set; }
+
+    public string? PhotoUrl { get; set; }
 }
 

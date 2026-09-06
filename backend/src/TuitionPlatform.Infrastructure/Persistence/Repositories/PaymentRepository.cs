@@ -27,5 +27,10 @@ public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
             .ToListAsync(cancellationToken);
         return items;
     }
+
+    public Task<decimal> GetTotalPaidCommissionAsync(CancellationToken cancellationToken = default)
+        => DbContext.Payments
+            .Where(p => p.Status == Domain.Enums.PaymentStatus.Paid)
+            .SumAsync(p => p.CommissionAmount, cancellationToken);
 }
 

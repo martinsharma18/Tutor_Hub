@@ -9,6 +9,11 @@ public class TeacherApplicationConfiguration : IEntityTypeConfiguration<TeacherA
     public void Configure(EntityTypeBuilder<TeacherApplication> builder)
     {
         builder.Property(a => a.Message).HasMaxLength(2000);
+
+        // TeacherProfileId/TuitionPostId are already indexed via their FK relationships
+        // (configured in TeacherProfileConfiguration/TuitionPostConfiguration); Status is a plain
+        // enum column filtered by the applicant-status workflow and gets nothing by default.
+        builder.HasIndex(a => a.Status);
     }
 }
 

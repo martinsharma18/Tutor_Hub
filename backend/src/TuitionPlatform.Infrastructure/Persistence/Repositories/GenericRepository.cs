@@ -29,6 +29,31 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return items;
     }
 
+    public virtual async Task<(IReadOnlyCollection<T> Items, int TotalCount)> ListPagedAsync(
+        Expression<Func<T, bool>>? predicate, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = DbContext.Set<T>().AsQueryable();
+        if (predicate is not null)
+        {
+            query = query.Where(predicate);
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, total);
+    }
+
+    public virtual Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    {
+        var query = DbContext.Set<T>().AsQueryable();
+        return predicate is null ? query.CountAsync(cancellationToken) : query.CountAsync(predicate, cancellationToken);
+    }
+
     public virtual Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         return DbContext.Set<T>().AddAsync(entity, cancellationToken).AsTask();

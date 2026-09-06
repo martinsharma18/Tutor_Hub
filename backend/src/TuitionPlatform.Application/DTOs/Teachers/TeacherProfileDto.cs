@@ -33,5 +33,16 @@ public class TeacherProfileDto
     public bool IsFeatured { get; set; }
 
     public decimal? HourlyRate { get; set; }
+
+    public string? CvUrl { get; set; }
+
+    public string? PhotoUrl { get; set; }
+
+    public double AverageRating { get; set; }
+
+    public int ReviewCount { get; set; }
+
+    /// <summary>Only populated for a geo search (lat/lng/radius supplied); null otherwise.</summary>
+    public double? DistanceKm { get; set; }
 }
 

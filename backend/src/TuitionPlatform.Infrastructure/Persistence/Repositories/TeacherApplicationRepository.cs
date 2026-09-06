@@ -23,7 +23,10 @@ public class TeacherApplicationRepository : GenericRepository<TeacherApplication
 
     public async Task<IReadOnlyCollection<TeacherApplication>> GetByTeacherIdAsync(Guid teacherProfileId, CancellationToken cancellationToken = default)
     {
+        // TeacherProfile must be included: ContactVisibility.ForApplication reads
+        // application.TeacherProfile.UserId to decide whether to reveal the parent's phone number.
         var items = await DbContext.TeacherApplications
+            .Include(a => a.TeacherProfile).ThenInclude(t => t.User)
             .Include(a => a.TuitionPost)
             .Where(a => a.TeacherProfileId == teacherProfileId)
             .ToListAsync(cancellationToken);
