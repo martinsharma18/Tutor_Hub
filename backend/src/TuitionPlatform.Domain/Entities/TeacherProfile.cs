@@ -45,6 +45,8 @@ public class TeacherProfile : AuditableEntity
     
     public string? CvUrl { get; set; }
 
+    public string? PhotoUrl { get; set; }
+
     public User User { get; set; } = default!;
 
     public ICollection<TeacherApplication> Applications { get; set; } = new List<TeacherApplication>();
