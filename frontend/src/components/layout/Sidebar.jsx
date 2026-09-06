@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   Home, PlusCircle, Briefcase, MessageSquare, UserCheck, Users,
   Settings, User, Files, Calendar, CreditCard, GraduationCap, LogOut,
-  ChevronRight,
+  ChevronRight, ScrollText, ListChecks, Wallet, Receipt, Inbox,
 } from "lucide-react";
 import clsx from "clsx";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -10,25 +10,45 @@ import { logout, selectCurrentUser } from "../../store/authSlice";
 
 const teacherNav = [
   { to: "/teacher",              label: "Overview",         icon: Home        },
+  { to: "/teacher/assignments",  label: "My Assignments",   icon: GraduationCap },
+  { to: "/teacher/earnings",     label: "Earnings",         icon: Wallet      },
   { to: "/teacher/profile",      label: "My Profile",       icon: User        },
   { to: "/teacher/applications", label: "Applications",     icon: Files       },
   { to: "/teacher/demo",         label: "Demo Requests",    icon: Calendar    },
-  { to: "/teacher/payments",     label: "Payments",         icon: CreditCard  },
   { to: "/teacher/messages",     label: "Messages",         icon: MessageSquare },
+];
+
+const parentNav = [
+  { to: "/parent",                label: "Overview",         icon: Home        },
+  { to: "/parent/tuitions",       label: "My Tuitions",      icon: GraduationCap },
+  { to: "/parent/invoices",       label: "Invoices",         icon: Receipt     },
+  { to: "/parent/create-post",    label: "Post Requirement", icon: PlusCircle  },
+  { to: "/parent/posts",          label: "My Vacancies",     icon: Briefcase   },
+  { to: "/parent/demo",           label: "Demo Requests",    icon: Calendar    },
+  { to: "/parent/messages",       label: "Messages",         icon: MessageSquare },
 ];
 
 const adminNav = [
   { to: "/admin",                label: "Dashboard",        icon: Home        },
+  // High in the list on purpose: with parent<->teacher chat gated behind a live placement,
+  // every pre-placement conversation comes through the office.
+  { to: "/admin/inbox",          label: "Inbox",            icon: Inbox       },
+  { to: "/admin/placements",     label: "Placements",       icon: GraduationCap },
+  { to: "/admin/invoices",       label: "Invoices",         icon: Receipt     },
   { to: "/admin/create-post",    label: "Post Vacancy",     icon: PlusCircle  },
   { to: "/admin/posts",          label: "Manage Vacancies", icon: Briefcase   },
   { to: "/admin/applications",   label: "Applications",     icon: MessageSquare },
   { to: "/admin/teachers",       label: "Teachers",         icon: UserCheck   },
   { to: "/admin/users",          label: "User Management",  icon: Users       },
+  { to: "/admin/lookups",        label: "Dropdown Options", icon: ListChecks  },
+  { to: "/admin/audit-log",      label: "Audit Log",        icon: ScrollText  },
   { to: "/admin/settings",       label: "Settings",         icon: Settings    },
 ];
 
+const navByRole = { Teacher: teacherNav, Parent: parentNav, Admin: adminNav };
+
 const Sidebar = ({ role }) => {
-  const navItems = role === "Teacher" ? teacherNav : adminNav;
+  const navItems = navByRole[role] ?? adminNav;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
@@ -59,7 +79,7 @@ const Sidebar = ({ role }) => {
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto sidebar-scroll px-3 py-4 space-y-0.5">
         <p className="px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-          {role === "Teacher" ? "Teacher" : "Admin"} Menu
+          {role} Menu
         </p>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -67,7 +87,7 @@ const Sidebar = ({ role }) => {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === "/admin" || item.to === "/teacher"}
+              end={item.to === "/admin" || item.to === "/teacher" || item.to === "/parent"}
               className={({ isActive }) =>
                 clsx(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group",
@@ -99,7 +119,23 @@ const Sidebar = ({ role }) => {
       </nav>
 
       {/* ── User footer ── */}
-      <div className="border-t border-slate-800 px-3 py-4">
+      <div className="border-t border-slate-800 px-3 py-4 space-y-1">
+        {/* Available to every role, so it lives here rather than in the role-specific nav above. */}
+        <NavLink
+          to="/account"
+          className={({ isActive }) =>
+            clsx(
+              "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
+              isActive ? "bg-slate-800 text-white" : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+            )
+          }
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
+            <Settings className="h-4 w-4" />
+          </span>
+          Account Settings
+        </NavLink>
+
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 transition-colors group">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white text-xs font-bold flex-shrink-0">
             {initials}

@@ -1,5 +1,5 @@
-import { Bell } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 
 // Map routes to human-readable page titles
 const pageTitles = {
@@ -10,12 +10,27 @@ const pageTitles = {
   "/admin/teachers":     "Teacher Management",
   "/admin/users":        "User Management",
   "/admin/settings":     "Settings",
+  "/admin/inbox":        "Inbox",
+  "/admin/lookups":      "Dropdown Options",
+  "/admin/audit-log":    "Audit Log",
+  "/admin/placements":   "Placements",
+  "/admin/invoices":     "Invoices",
+  "/teacher/assignments": "My Assignments",
+  "/teacher/earnings":   "Earnings",
+  "/parent/tuitions":    "My Tuitions",
+  "/parent/invoices":    "Invoices",
   "/teacher":            "Overview",
   "/teacher/profile":    "My Profile",
   "/teacher/applications": "My Applications",
   "/teacher/demo":       "Demo Requests",
   "/teacher/payments":   "Payments",
   "/teacher/messages":   "Messages",
+  "/parent":             "Overview",
+  "/parent/create-post": "Post Requirement",
+  "/parent/posts":       "My Vacancies",
+  "/parent/demo":        "Demo Requests",
+  "/parent/payments":    "Payments",
+  "/parent/messages":    "Messages",
 };
 
 const TopBar = ({ fullName, role }) => {
@@ -38,11 +53,8 @@ const TopBar = ({ fullName, role }) => {
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
-        {/* Notification bell */}
-        <button className="relative p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-        </button>
+        {/* Notification bell — was a static, non-functional placeholder */}
+        <NotificationBell />
 
         {/* Divider */}
         <div className="h-6 w-px bg-slate-200 mx-1" />

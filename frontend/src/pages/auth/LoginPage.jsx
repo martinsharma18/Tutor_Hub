@@ -32,6 +32,7 @@ const LoginPage = () => {
       if (from)               { navigate(from, { replace: true }); return; }
       if (role === "Teacher")   navigate("/teacher");
       else if (role === "Admin") navigate("/admin");
+      else if (role === "Parent") navigate("/parent");
       else                      navigate("/");
     },
     onError: (err) => console.error("Login error:", err),
@@ -189,13 +190,15 @@ const LoginPage = () => {
           </form>
 
           {/* Footer */}
+          {/* Generic prompt, so it must offer both roles — this previously sent everyone to the
+              teacher form, leaving parents with no route to sign up from here. */}
           <p className="mt-6 text-center text-slate-500 text-sm">
             Don't have an account?{" "}
             <Link
-              to="/register/teacher"
+              to="/register"
               className="text-primary-600 font-semibold hover:text-primary-700"
             >
-              Register as a Teacher
+              Create one
             </Link>
           </p>
         </div>

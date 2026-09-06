@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Header from "../components/layout/Header";
+import usePageMeta from "../hooks/usePageMeta";
 import Footer from "../components/layout/Footer";
 
 const stats = [
@@ -45,12 +46,17 @@ const steps = [
 ];
 
 const AboutPage = () => {
+  usePageMeta({
+    title: "About Us",
+    description: "Learn how Best Tuitions connects Nepali families with verified private tutors, and how our matching and verification process works.",
+  });
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       <Header />
 
       <main className="pt-24">
-        <section className="px-4 sm:px-6 lg:px-8 py-20 bg-gradient-to-br from-orange-50 via-white to-slate-50">
+        <section className="px-4 sm:px-6 lg:px-8 py-20 bg-slate-50">
           <div className="container mx-auto max-w-6xl">
             <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
               <div>

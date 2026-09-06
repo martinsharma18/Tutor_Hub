@@ -112,11 +112,11 @@ const TeacherDashboardPage = () => {
                     <p className="text-[10px] uppercase font-semibold text-emerald-600 mb-1">Parent Contact</p>
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-emerald-800 font-mono text-lg">
-                        {app.tuitionPost.parentPhoneNumber ?? "—"}
+                        {app.parentPhoneNumber ?? "—"}
                       </span>
-                      {app.tuitionPost.parentPhoneNumber && (
+                      {app.parentPhoneNumber && (
                         <a
-                          href={`tel:${app.tuitionPost.parentPhoneNumber}`}
+                          href={`tel:${app.parentPhoneNumber}`}
                           className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
                         >
                           <Phone className="h-4 w-4" />

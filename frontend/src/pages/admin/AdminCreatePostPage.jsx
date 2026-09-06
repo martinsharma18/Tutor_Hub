@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextField from "../../components/forms/TextField";
 import TextAreaField from "../../components/forms/TextAreaField";
-import SelectField from "../../components/forms/SelectField";
+import LookupSelect from "../../components/forms/LookupSelect";
 import { postsApi } from "../../features/posts/api";
 import SectionCard from "../../components/ui/SectionCard";
 import { PlusCircle } from "lucide-react";
@@ -55,11 +55,15 @@ const AdminCreatePostPage = () => {
           <TextField label="Subject" {...register("subject")} error={errors.subject} />
           <div className="grid gap-4 md:grid-cols-2">
             <TextField label="Class Level" {...register("classLevel")} error={errors.classLevel} />
-            <SelectField label="Mode" {...register("mode")} error={errors.mode}>
-              <option value="Online">Online</option>
-              <option value="Offline">Offline</option>
-              <option value="Hybrid">Hybrid</option>
-            </SelectField>
+            <label className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+              Mode
+              <LookupSelect
+                category="TeachingMode"
+                {...register("mode")}
+                className="rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:ring-2 focus:ring-brand-500"
+              />
+              {errors.mode && <span className="text-xs text-rose-500">{errors.mode.message}</span>}
+            </label>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <TextField label="City" {...register("city")} error={errors.city} />

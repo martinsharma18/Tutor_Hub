@@ -10,6 +10,10 @@ import {
   ChevronRight, ChevronLeft, Briefcase, Star, X
 } from "lucide-react";
 import { authApi } from "../../features/auth/api";
+import { filesApi } from "../../features/files/api";
+import { teacherApi } from "../../features/teachers/api";
+import { toast } from "react-hot-toast";
+import LookupSelect from "../../components/forms/LookupSelect";
 import { useAppDispatch } from "../../store/hooks";
 import { setCredentials } from "../../store/authSlice";
 
@@ -32,6 +36,11 @@ const schema = z.object({
   hourlyRate: z.number().optional(),
   gender: z.string().optional(),
   nationalId: z.string().optional(),
+  // Explicit opt-in — an unticked box blocks submission, rather than relying on implied consent
+  // from a line of small print near the button.
+  acceptedTerms: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the Terms and Privacy Policy to continue" }),
+  }),
 });
 
 const steps = [
@@ -69,7 +78,6 @@ const RegisterTeacherPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [cvFile, setCvFile] = useState(null);
-  const [cvBase64, setCvBase64] = useState(null);
   const [cvError, setCvError] = useState("");
   const fileInputRef = useRef(null);
 
@@ -84,11 +92,28 @@ const RegisterTeacherPage = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: authApi.registerTeacher,
-    onSuccess: (data) => {
-      dispatch(setCredentials(data));
-      navigate("/teacher");
+    // Two steps on purpose: register first, then upload the CV as a real multipart file using the
+    // token we just received. The previous version base64-encoded the entire document into the
+    // CvUrl string column, which is a URL field — it bloated the row and produced no usable link.
+    mutationFn: async ({ payload, file }) => {
+      const auth = await authApi.registerTeacher(payload);
+      // Credentials must land in the store before the upload — apiClient reads the token from it.
+      dispatch(setCredentials(auth));
+
+      if (file) {
+        try {
+          const { url } = await filesApi.upload(file);
+          await teacherApi.updateProfile({ cvUrl: url });
+        } catch {
+          // A failed CV upload must not undo a successful registration — the account exists and
+          // they can re-upload from their profile page.
+          toast.error("Account created, but the CV upload failed. You can add it from your profile.");
+        }
+      }
+
+      return auth;
     },
+    onSuccess: () => navigate("/teacher"),
   });
 
   const stepFields = {
@@ -119,33 +144,33 @@ const RegisterTeacherPage = () => {
       return;
     }
     setCvError("");
+    // Held as a File and uploaded after registration (see the mutation) — no base64 encoding.
     setCvFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setCvBase64(reader.result);
-    reader.readAsDataURL(file);
   };
 
   const onSubmit = (values) => {
     mutation.mutate({
-      fullName: requiredString(values.fullName),
-      email: requiredString(values.email).toLowerCase(),
-      password: values.password,
-      phoneNumber: requiredString(values.phoneNumber),
-      qualification: requiredString(values.qualification),
-      university: optionalString(values.university),
-      graduationYear: optionalString(values.graduationYear),
-      yearsOfExperience: values.yearsOfExperience,
-      experienceSummary: requiredString(values.experienceSummary),
-      subjects: requiredString(values.subjects),
-      classes: requiredString(values.classes),
-      preferredMode: values.preferredMode,
-      bio: requiredString(values.bio),
-      city: requiredString(values.city),
-      area: requiredString(values.area),
-      hourlyRate: values.hourlyRate ?? null,
-      gender: optionalString(values.gender),
-      nationalId: optionalString(values.nationalId),
-      cvUrl: cvBase64 || null,
+      payload: {
+        fullName: requiredString(values.fullName),
+        email: requiredString(values.email).toLowerCase(),
+        password: values.password,
+        phoneNumber: requiredString(values.phoneNumber),
+        qualification: requiredString(values.qualification),
+        university: optionalString(values.university),
+        graduationYear: optionalString(values.graduationYear),
+        yearsOfExperience: values.yearsOfExperience,
+        experienceSummary: requiredString(values.experienceSummary),
+        subjects: requiredString(values.subjects),
+        classes: requiredString(values.classes),
+        preferredMode: values.preferredMode,
+        bio: requiredString(values.bio),
+        city: requiredString(values.city),
+        area: requiredString(values.area),
+        hourlyRate: values.hourlyRate ?? null,
+        gender: optionalString(values.gender),
+        nationalId: optionalString(values.nationalId),
+      },
+      file: cvFile,
     });
   };
 
@@ -176,6 +201,12 @@ const RegisterTeacherPage = () => {
       </div>
 
       <div className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 py-10">
+        <div className="w-full max-w-3xl mb-4">
+          <Link to="/register" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700">
+            <ChevronLeft className="h-4 w-4" /> Back to options
+          </Link>
+        </div>
+
         <div className="w-full max-w-3xl">
           {/* Page Title */}
           <div className="text-center mb-8">
@@ -232,13 +263,12 @@ const RegisterTeacherPage = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5">Gender</label>
-                      <select {...register("gender")} className={inputClass(errors.gender)}>
-                        <option value="">Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                        <option value="PreferNotToSay">Prefer not to say</option>
-                      </select>
+                      <LookupSelect
+                        category="Gender"
+                        placeholder="Select gender"
+                        {...register("gender")}
+                        className={inputClass(errors.gender)}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address *</label>
@@ -268,16 +298,12 @@ const RegisterTeacherPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5">Highest Qualification *</label>
-                      <select {...register("qualification")} className={inputClass(errors.qualification)}>
-                        <option value="">Select qualification</option>
-                        <option value="SLC/SEE">SLC / SEE</option>
-                        <option value="+2/Intermediate">+2 / Intermediate</option>
-                        <option value="Bachelor">Bachelor's Degree</option>
-                        <option value="Master">Master's Degree</option>
-                        <option value="MPhil">MPhil</option>
-                        <option value="PhD">PhD</option>
-                        <option value="Diploma">Diploma / Certificate</option>
-                      </select>
+                      <LookupSelect
+                        category="Qualification"
+                        placeholder="Select qualification"
+                        {...register("qualification")}
+                        className={inputClass(errors.qualification)}
+                      />
                       {errors.qualification && <p className="text-red-500 text-xs mt-1">{errors.qualification.message}</p>}
                     </div>
                     <div>
@@ -471,6 +497,27 @@ const RegisterTeacherPage = () => {
                     {cvError && <p className="text-red-500 text-xs mt-1">{cvError}</p>}
                   </div>
 
+                  {/* Terms & privacy consent */}
+                  <div>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        {...register("acceptedTerms")}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                      />
+                      <span className="text-sm text-slate-600">
+                        I agree to the{" "}
+                        <Link to="/terms" target="_blank" className="text-orange-600 hover:underline font-medium">Terms of Service</Link>
+                        {" "}and{" "}
+                        <Link to="/privacy" target="_blank" className="text-orange-600 hover:underline font-medium">Privacy Policy</Link>,
+                        including how my profile information is shown to parents.
+                      </span>
+                    </label>
+                    {errors.acceptedTerms && (
+                      <p className="text-red-500 text-xs mt-1">{errors.acceptedTerms.message}</p>
+                    )}
+                  </div>
+
                   {/* Error */}
                   {mutation.isError && (
                     <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
@@ -525,8 +572,7 @@ const RegisterTeacherPage = () => {
           </form>
 
           <p className="text-center text-sm text-slate-400 mt-6">
-            Step {currentStep} of {steps.length} — By registering, you agree to our{" "}
-            <Link to="/terms" className="text-orange-600 hover:underline">Terms of Service</Link>
+            Step {currentStep} of {steps.length}
           </p>
         </div>
       </div>

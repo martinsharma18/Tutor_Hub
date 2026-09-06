@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Authenticated areas — no value in crawling, and these would just 302 to /login.
+Disallow: /teacher
+Disallow: /parent
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /forgot-password
+
+Sitemap: https://besttuitions.com/sitemap.xml

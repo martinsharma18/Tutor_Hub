@@ -5,10 +5,17 @@ import { Briefcase, MapPin, DollarSign, Clock, Calendar, Filter, X, CheckCircle 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { postsApi } from "../features/posts/api";
+import LookupSelect from "../components/forms/LookupSelect";
+import usePageMeta from "../hooks/usePageMeta";
 import { useAppSelector } from "../store/hooks";
 import { selectCurrentUser } from "../store/authSlice";
 
 const VacanciesPage = () => {
+  usePageMeta({
+    title: "Tuition Vacancies",
+    description: "Browse open home and online tuition vacancies across Nepal. Filter by subject, class level, location, and budget, then apply directly.",
+  });
+
   const location = useLocation();
   const navigate = useNavigate();
   const user = useAppSelector(selectCurrentUser);
@@ -187,16 +194,13 @@ const VacanciesPage = () => {
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Teaching Mode
                     </label>
-                    <select
+                    <LookupSelect
+                      category="TeachingMode"
+                      placeholder="All Modes"
                       value={filters.mode}
                       onChange={(e) => updateFilter("mode", e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                    >
-                      <option value="">All Modes</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Hybrid">Hybrid</option>
-                    </select>
+                    />
                   </div>
                 </div>
               </div>
