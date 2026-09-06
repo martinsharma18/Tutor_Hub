@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -6,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TextField from "../../components/forms/TextField";
 import TextAreaField from "../../components/forms/TextAreaField";
 import LookupSelect from "../../components/forms/LookupSelect";
+import { useLookup } from "../../features/metadata/useMetadata";
 import { postsApi } from "../../features/posts/api";
 import SectionCard from "../../components/ui/SectionCard";
 import PageHeader from "../../components/ui/PageHeader";
@@ -30,8 +32,22 @@ const ParentCreatePostPage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm({ resolver: zodResolver(schema) });
+
+  // TeachingMode options load async, so the native <select> has zero <option> elements at mount.
+  // Once they arrive, the browser silently selects the first option in the DOM — but that never
+  // fires a change event, so react-hook-form's tracked value for "mode" stays "" forever unless
+  // we explicitly tell it about the new default here.
+  const { options: modeOptions, isLoading: modesLoading } = useLookup("TeachingMode");
+
+  useEffect(() => {
+    if (!modesLoading && modeOptions.length > 0 && !getValues("mode")) {
+      setValue("mode", modeOptions[0].code, { shouldValidate: false });
+    }
+  }, [modesLoading, modeOptions, getValues, setValue]);
 
   const mutation = useMutation({
     mutationFn: postsApi.create,
@@ -81,8 +97,8 @@ const ParentCreatePostPage = () => {
           {mutation.isError && (
             <p className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600">Something went wrong. Try again.</p>
           )}
-          <button type="submit" className="btn-primary w-full md:w-auto" disabled={mutation.isPending}>
-            {mutation.isPending ? "Publishing..." : "Publish Requirement"}
+          <button type="submit" className="btn-primary w-full md:w-auto" disabled={mutation.isPending || modesLoading}>
+            {mutation.isPending ? "Publishing..." : modesLoading ? "Loading form…" : "Publish Requirement"}
           </button>
         </form>
       </SectionCard>
