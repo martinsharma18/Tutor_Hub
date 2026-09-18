@@ -144,9 +144,9 @@ const LandingPage = () => {
                 <div key={i} className="h-80 bg-slate-100 animate-pulse rounded-3xl"></div>
               ))}
             </div>
-          ) : (
+          ) : allVacancies?.items?.length ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {allVacancies?.items?.map((vacancy) => (
+              {allVacancies.items.slice(0, 6).map((vacancy) => (
                 <VacancyCard
                   key={vacancy.id}
                   post={vacancy}
@@ -154,6 +154,22 @@ const LandingPage = () => {
                   className="shadow-xl hover:shadow-2xl transition-shadow"
                 />
               ))}
+            </div>
+          ) : (
+            <div className="bg-white border-2 border-dashed border-orange-200 rounded-3xl py-16 px-6 text-center">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500">
+                <Briefcase className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">No open vacancies right now</h3>
+              <p className="text-slate-500 max-w-md mx-auto mb-6">
+                New tuition requirements are posted regularly — check back soon, or post your own requirement if you're looking for a tutor.
+              </p>
+              <button
+                onClick={() => navigate("/register/parent")}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors"
+              >
+                <CirclePlus className="h-5 w-5" /> Post a Requirement
+              </button>
             </div>
           )}
         </div>
