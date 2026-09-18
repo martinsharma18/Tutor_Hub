@@ -1,7 +1,11 @@
 using AutoMapper;
 using TuitionPlatform.Application.DTOs.Auth;
 using TuitionPlatform.Application.DTOs.Demo;
+using TuitionPlatform.Application.DTOs.Messages;
+using TuitionPlatform.Application.DTOs.Metadata;
+using TuitionPlatform.Application.DTOs.Notifications;
 using TuitionPlatform.Application.DTOs.Payments;
+using TuitionPlatform.Application.DTOs.Reviews;
 using TuitionPlatform.Application.DTOs.Teachers;
 using TuitionPlatform.Application.DTOs.TuitionPosts;
 using TuitionPlatform.Domain.Entities;
@@ -32,17 +36,34 @@ public class ApplicationProfile : Profile
             .ForMember(dest => dest.HiredAtUtc, opt => opt.MapFrom(src => src.HiredAtUtc))
             .ForMember(dest => dest.IsPaymentVerified, opt => opt.MapFrom(src => src.IsPaymentVerified))
             .ForMember(dest => dest.CommissionAmount, opt => opt.MapFrom(src => src.TuitionPost.CommissionAmount))
-            .ForMember(dest => dest.ParentPhoneNumber, opt => opt.MapFrom(src => src.TuitionPost.ParentPhoneNumber));
+            // Contact details are paywalled: never mapped automatically. Call sites must opt in
+            // via ContactVisibility so a forgotten mask leaks nothing instead of leaking everything.
+            .ForMember(dest => dest.ParentPhoneNumber, opt => opt.Ignore());
 
         CreateMap<TuitionPost, TuitionPostDto>()
             .ForMember(dest => dest.Mode, opt => opt.MapFrom(src => src.Mode.ToString()))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            // Same rule as above. This map feeds the anonymous /api/tuition-posts/open endpoint,
+            // where AutoMapper's name-convention matching previously exposed every parent's
+            // phone number to unauthenticated callers.
+            .ForMember(dest => dest.ParentPhoneNumber, opt => opt.Ignore());
 
         CreateMap<DemoRequest, DemoRequestDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
         CreateMap<Payment, PaymentDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+        CreateMap<Review, ReviewDto>()
+            .ForMember(dest => dest.ReviewerName, opt => opt.MapFrom(src => src.ReviewerUser.FullName));
+
+        CreateMap<Notification, NotificationDto>();
+
+        // Was missing entirely — SendMessageAsync and GetConversationAsync both map through this,
+        // so every message send threw an AutoMapper configuration error at runtime.
+        CreateMap<Message, MessageDto>();
+
+        CreateMap<LookupItem, LookupItemDto>();
     }
 }
 

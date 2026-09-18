@@ -31,5 +31,26 @@ public class MessagesController : ControllerBase
         var result = await _messageService.GetConversationAsync(User.GetUserId(), otherUserId, take, cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet("inbox")]
+    public async Task<ActionResult<IReadOnlyCollection<ConversationSummaryDto>>> Inbox(CancellationToken cancellationToken)
+    {
+        var result = await _messageService.GetInboxAsync(User.GetUserId(), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("unread-count")]
+    public async Task<ActionResult<int>> UnreadCount(CancellationToken cancellationToken)
+    {
+        var result = await _messageService.GetUnreadCountAsync(User.GetUserId(), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("contacts")]
+    public async Task<ActionResult<IReadOnlyCollection<MessageContactDto>>> Contacts(CancellationToken cancellationToken)
+    {
+        var result = await _messageService.GetContactsAsync(User.GetUserId(), cancellationToken);
+        return Ok(result);
+    }
 }
 

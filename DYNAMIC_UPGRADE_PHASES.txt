@@ -1,0 +1,488 @@
+===================================================================================
+        DYNAMIC SYSTEM UPGRADE — PHASE-BY-PHASE IMPLEMENTATION PLAN
+     How to turn every hardcoded part of Tutor Hub into admin-controlled,
+                    API-driven, runtime-configurable data
+                          Generated: 2026-08-18
+===================================================================================
+
+GOAL OF THIS DOCUMENT
+  Right now, changing a subject list, a city, a landing-page headline, or a
+  business rule requires a developer, a code edit, and a redeploy. After these
+  phases, an admin changes them from the browser and the whole site updates
+  instantly — no deploy, no developer.
+
+MARKET CORRECTION (found during this audit)
+  RegisterTeacherPage.jsx lists qualifications as "SLC/SEE" and "+2/Intermediate".
+  These are NEPALI education levels. So this platform targets NEPAL, not India.
+  That changes some earlier recommendations:
+    - Payment gateways (deferred, but for the record): eSewa, Khalti, IME Pay,
+      Connect IPS — NOT Razorpay.
+    - SMS/OTP: Sparrow SMS or Aakash SMS — NOT MSG91.
+    - Currency should be NPR and must itself be dynamic (see Phase D3).
+  It also makes Phase D1 more urgent: a Nepal-specific education system
+  (SEE / +2 / Bachelor, and boards like NEB) cannot be hardcoded if you ever
+  want to sell or expand this platform to another country.
+
+THE SIX PHASES AT A GLANCE
+  D0  Foundation      — build the reference-data backbone            (~2 days)
+  D1  Master Data     — subjects, classes, cities, qualifications    (~4 days)
+  D2  Dynamic UI      — frontend consumes it all from the API        (~3 days)
+  D3  Business Rules  — runtime config + feature flags               (~3 days)
+  D4  Content / CMS   — landing page, nav, footer, emails            (~4 days)
+  D5  Real-Time       — live data instead of manual refresh          (~5 days)
+  D6  Intelligence    — personalization, recommendations, ranking    (~5 days)
+
+Each phase is independently shippable. Do them in order — later phases depend
+on the backbone built in D0.
+
+===================================================================================
+   PHASE D0 — FOUNDATION: THE REFERENCE-DATA BACKBONE
+===================================================================================
+WHY FIRST
+  Every later phase needs the same thing: "admin-editable list of values, served
+  to the frontend, cached, versioned." Build that machinery once instead of
+  six times.
+
+WHAT TO BUILD
+
+  1. A generic LookupItem entity — one table serving every simple list.
+       Domain/Entities/LookupItem.cs
+         Guid    Id
+         string  Category      // "Subject" | "ClassLevel" | "Board" | "City"
+                               // | "Qualification" | "Gender" | "TeachingMode"
+         string  Code          // stable machine key, e.g. "MATH" — never changes
+         string  Label         // display text, e.g. "Mathematics" — editable
+         string? LabelNe       // Nepali translation (see Phase D4 i18n)
+         Guid?   ParentId      // for hierarchy: Area belongs to City
+         int     SortOrder
+         bool    IsActive      // soft-disable instead of delete
+         string? Metadata      // JSON for extras (icon, colour, aliases)
+
+     WHY ONE TABLE, NOT TWELVE: you write the repository, the admin CRUD screen,
+     the caching, and the API once. Adding "Board" later becomes a data insert,
+     not a new migration + new controller + new admin page.
+
+  2. Repository + service
+       Application/Interfaces/Persistence/ILookupRepository.cs
+       Infrastructure/Persistence/Repositories/LookupRepository.cs
+       Application/Services/Lookup/LookupService.cs
+     LookupService must cache aggressively — this data is read on every page
+     load and changes maybe once a month. Use IMemoryCache with a cache key per
+     category, invalidated on any admin write.
+
+  3. Two endpoints — one public, one admin
+       GET  /api/metadata                       [AllowAnonymous]
+            Returns EVERY active lookup category in one payload:
+            { subjects:[...], classLevels:[...], cities:[...], modes:[...], ... }
+            The frontend calls this ONCE at app boot and caches it.
+       GET  /api/metadata/{category}            [AllowAnonymous]
+            Single category, for lazy/dependent loads (e.g. areas for a city).
+
+       Admin/Controllers/LookupController.cs    [Authorize(Roles="Admin")]
+       GET    /api/admin/lookups/{category}     list incl. inactive
+       POST   /api/admin/lookups                create
+       PUT    /api/admin/lookups/{id}           edit label/sort/active
+       DELETE /api/admin/lookups/{id}           soft delete (IsActive = false)
+       POST   /api/admin/lookups/reorder        bulk sort update
+
+  4. Cache-busting version stamp
+     Add a  version  field to the /api/metadata response (a timestamp or hash).
+     The frontend compares it and refetches only when it changes. Prevents
+     stale dropdowns without refetching on every navigation.
+
+  5. Seed migration
+     Seed the CURRENT hardcoded values so nothing breaks on deploy:
+       TeachingMode  : Online, Offline, Hybrid
+       Gender        : Male, Female, Other, PreferNotToSay
+       Qualification : SLC/SEE, +2/Intermediate, Bachelor, Master, MPhil, PhD,
+                       Diploma
+     (These are exactly the values currently hardcoded in RegisterTeacherPage.jsx
+     and the mode dropdowns — copy them verbatim so behaviour is unchanged.)
+
+DELIVERABLE
+  Admin can add/edit/reorder/disable any list value from the browser, and a
+  single API call returns everything the frontend needs to render dropdowns.
+
+===================================================================================
+   PHASE D1 — MASTER DATA: KILL THE FREE-TEXT STRINGS
+===================================================================================
+THE PROBLEM TODAY
+  TeacherProfile.Subjects is a free-text string (max 1000 chars). So is .Classes.
+  TuitionPost.Subject and .ClassLevel are free text. City and Area are free text
+  on three different entities.
+
+  Consequences that are actively hurting you right now:
+    - Search uses  .Where(t => t.Subjects.Contains(subject))  — a naive substring
+      match. "Maths" will NOT find a teacher who typed "Mathematics". "math"
+      will not match "Math" depending on collation. Your search silently
+      returns wrong results.
+    - "Kathmandu", "kathmandu", "KTM", and "Kathmandu " are four different
+      cities to your database. Location filtering is unreliable.
+    - You cannot build analytics ("most demanded subject") on free text.
+    - You cannot build faceted filters with counts.
+    - Substring matching also creates false positives: searching "Art" matches
+      a teacher who teaches "Martial Arts".
+
+WHAT TO BUILD
+
+  1. Normalize the many-to-many relationships
+       Domain/Entities/TeacherSubject.cs      (TeacherProfileId, LookupItemId)
+       Domain/Entities/TeacherClassLevel.cs   (TeacherProfileId, LookupItemId)
+     TuitionPost keeps a single SubjectId + ClassLevelId (a post is for one
+     subject), so those become plain FK Guid columns.
+
+  2. Hierarchical locations
+     Use LookupItem's ParentId: Country -> Province -> District -> City -> Area.
+     For Nepal this maps naturally onto Province / District / Municipality.
+     TeacherProfile.CityId and .AreaId become FKs; keep Latitude/Longitude for
+     distance search (Phase D6).
+
+  3. Migration strategy — THIS IS THE RISKY PART, PLAN IT
+       Step 1: Add the new FK/join tables ALONGSIDE the existing string columns.
+               Do not drop anything yet.
+       Step 2: Write a one-off data-migration script that reads every existing
+               string value, normalizes it (trim, lowercase, strip punctuation),
+               fuzzy-matches it against seeded LookupItems, and links the row.
+       Step 3: Dump everything that FAILED to match into an admin review screen
+               ("47 teachers have an unrecognized subject — map them"). Let the
+               admin resolve them manually, or auto-create a LookupItem.
+       Step 4: Only after the review queue is empty, drop the string columns.
+     Do NOT try to do this in one migration. You will lose data.
+
+  4. Add an Aliases field (use LookupItem.Metadata JSON) so "Maths", "Math",
+     "Mathematics", and the Nepali "गणित" all resolve to the same subject.
+     This is what makes search feel intelligent.
+
+  5. Rewrite the search query
+     Replace  .Contains(subject)  in TeacherProfileRepository.SearchAsync with a
+     proper join on the subject FK. Exact, indexed, fast, and correct.
+
+  6. Add the indexes at the same time
+     On every new FK column (TeacherSubject.LookupItemId, TuitionPost.SubjectId,
+     TeacherProfile.CityId, etc.). Part 6 of MASTER_UPGRADE_PLAN.txt lists the
+     others you are missing.
+
+DELIVERABLE
+  Search actually works. Admin adds a new subject once and it instantly appears
+  in every dropdown, every filter, and every analytics chart across the site.
+
+===================================================================================
+   PHASE D2 — DYNAMIC UI: FRONTEND STOPS HARDCODING ANYTHING
+===================================================================================
+WHAT IS HARDCODED TODAY (exact locations found in the audit)
+
+  Teaching modes — the SAME four <option> tags duplicated in FOUR files:
+    pages/TeachersPage.jsx:141-144
+    pages/VacanciesPage.jsx:195-198
+    pages/teacher/TeacherProfilePage.jsx:315-317
+    pages/admin/AdminCreatePostPage.jsx:59-61
+  Gender options        : pages/auth/RegisterTeacherPage.jsx:236-240
+  Qualifications        : pages/auth/RegisterTeacherPage.jsx:272-279
+  Post status filter    : pages/admin/AdminPostsPage.jsx:58-61
+  Role dropdown         : pages/admin/UserManagementPage.jsx:125-127
+  Sidebar navigation    : components/layout/Sidebar.jsx:11 (teacherNav),
+                          :20 (adminNav) — and NO parentNav exists
+  Footer links          : components/layout/Footer.jsx:7, 15, 21
+  Header nav            : components/layout/Header.jsx:22
+  Contact topics        : pages/ContactPage.jsx:36, 109-112
+
+  A LIVE BUG THIS CAUSES: UserManagementPage.jsx:126 offers "Parent" in the role
+  dropdown, but UserRole has no Parent value. An admin who picks it gets a
+  BadRequestException("Invalid role."). The UI and backend already disagree —
+  exactly the class of bug that disappears when dropdowns are API-driven.
+
+WHAT TO BUILD
+
+  1. A metadata provider at the app root
+       frontend/src/features/metadata/api.js       fetch /api/metadata
+       frontend/src/features/metadata/useMetadata.js
+     Load once on app boot with React Query, staleTime: Infinity, and store it.
+     Every dropdown in the app reads from this hook.
+
+  2. A reusable <LookupSelect category="TeachingMode" /> component
+       frontend/src/components/forms/LookupSelect.jsx
+     Then delete all four duplicated mode dropdowns and replace each with one
+     line. Same for gender, qualification, subject, class, city.
+
+  3. Dependent dropdowns
+     <LookupSelect category="Area" parentId={selectedCityId} /> — areas filter
+     to the chosen city automatically using LookupItem.ParentId.
+
+  4. Multi-select for teacher subjects/classes
+     Once Phase D1 makes these many-to-many, the profile form needs a proper
+     tag/multi-select control instead of a free-text box.
+
+  5. Config-driven navigation
+     Move Sidebar's teacherNav/adminNav (and the missing parentNav) into a
+     role-keyed config object, ideally served from the API so you can add a
+     dashboard menu item without a deploy. At minimum, one shared config file
+     instead of hardcoded arrays per role.
+
+  6. Dynamic form schemas (advanced, optional)
+     If you want registration fields themselves to be admin-configurable, have
+     the API return a field descriptor list and render the form from it. Powerful
+     for white-labelling, but only do this if you are pursuing the multi-tenant
+     SaaS path — it adds real complexity.
+
+DELIVERABLE
+  Zero hardcoded option lists in the frontend. Adding a subject or a city is a
+  database row, and every screen picks it up on next load.
+
+===================================================================================
+   PHASE D3 — DYNAMIC BUSINESS RULES & FEATURE FLAGS
+===================================================================================
+WHAT ALREADY WORKS — AND THE TRAP IN IT
+  AdminSettings (CommissionPercentage, FlatCommissionAmount, PaymentInstructions,
+  AutoApproveTeachers) is exactly the right pattern: admin-editable business
+  config, read at runtime, no deploy needed. Extend it.
+
+  BUT: AutoApproveTeachers is editable in the admin UI, returned by the API —
+  and NEVER READ BY ANY CODE. AuthService.RegisterTeacherAsync hardcodes
+  IsApproved = false. The admin toggles a switch and nothing happens.
+
+  THE LESSON FOR THIS ENTIRE PHASE: a setting that exists but is not read is
+  worse than no setting, because it lies to the operator. For every config value
+  you add below, write the code that reads it in the same commit, and add a test
+  that proves toggling it changes behaviour.
+
+WHAT TO BUILD
+
+  1. Fix AutoApproveTeachers first — make RegisterTeacherAsync read it.
+     This is your proof that the pattern works end to end.
+
+  2. Expand AdminSettings into grouped, typed configuration
+       PLATFORM   : SiteName, LogoUrl, SupportEmail, SupportPhone,
+                    Currency (NPR), CurrencySymbol, DefaultLanguage, TimeZone
+       BUSINESS   : CommissionPercentage, FlatCommissionAmount, MinPostBudget,
+                    MaxPostBudget, FeaturedListingDurationDays
+       WORKFLOW   : AutoApproveTeachers, AutoApproveParentPosts,
+                    RequirePhoneVerification, RequireEmailVerification,
+                    MaxApplicationsPerTeacherPerPost, PostExpiryDays
+       LIMITS     : MaxActivePostsPerParent, MaxFileUploadMb,
+                    SearchResultsPerPage
+       NOTIFY     : EnableEmailNotifications, EnableSmsNotifications,
+                    NotifyOnNewApplication, NotifyOnDemoRequest
+
+     Store as key/value with a Type column (bool/int/decimal/string) plus a
+     Group, so the admin settings page can RENDER ITSELF from the data — new
+     setting appears in the UI automatically with the right input control.
+
+  3. A feature-flag table
+       FeatureFlag { Key, IsEnabled, Description, RolloutPercentage?, Audience? }
+       GET /api/features  — public, cached
+     Lets you ship code dark, enable per environment, and kill a broken feature
+     without a rollback deploy. Wrap every Phase D5/D6 feature in a flag.
+
+  4. Configurable workflow rules (the deeper version)
+     Your post lifecycle is currently inconsistent and partly dead:
+     TuitionPostStatus has Pending/Approved/Open/Closed, but CreateAsync always
+     writes Open, GetPendingPostsAsync is hardcoded to return an empty list, and
+     ApplyToPostAsync checks for "Approved OR Open". Two states are unreachable.
+     Before making this configurable, DECIDE the real lifecycle and delete the
+     rest. Then let AdminSettings.AutoApproveParentPosts choose between
+     "Pending -> admin approves -> Open" and "straight to Open".
+
+  5. Dynamic commission rules (beyond one flat percentage)
+     A CommissionRule table (Subject/City/ClassLevel/Mode + amount or percent +
+     priority) lets you charge differently for high-value tutoring without a
+     code change. Fall back to the global AdminSettings value when nothing matches.
+
+DELIVERABLE
+  Business behaviour — approval flows, limits, commission, currency, which
+  features are live — is changed from the admin panel, not from source code.
+
+===================================================================================
+   PHASE D4 — DYNAMIC CONTENT: THE LANDING PAGE STOPS BEING CODE
+===================================================================================
+WHAT IS HARDCODED TODAY
+    pages/LandingPage.jsx:34   const features = [...]
+    pages/AboutPage.jsx:15     const stats = [...]
+    pages/AboutPage.jsx:22     const values = [...]
+    pages/AboutPage.jsx:40     const steps = [...]
+    pages/ContactPage.jsx:15   const contactMethods = [...]
+    pages/ContactPage.jsx:36   const supportTopics = [...]
+    components/layout/Footer.jsx:7,15,21  quickLinks / legalLinks / socialLinks
+
+  Every marketing tweak — a new stat, a reworded value, a changed phone number
+  in the footer — currently costs a developer and a deploy.
+
+WHAT TO BUILD
+
+  1. A ContentBlock entity
+       Guid   Id
+       string Key           // "landing.hero", "about.values", "footer.links"
+       string Type          // "text" | "html" | "list" | "image" | "json"
+       string Value         // JSON payload for structured blocks
+       string? ValueNe      // Nepali version
+       bool   IsPublished
+       int    SortOrder
+
+  2. Endpoints
+       GET /api/content/{pageKey}      [AllowAnonymous] cached hard
+       Admin CRUD under /api/admin/content
+
+  3. Admin content editor screen
+     Group blocks by page, render the right editor per Type (plain input for
+     text, rich editor for html, repeater for list). Add a "Preview" toggle.
+
+  4. Testimonials as real data
+       Testimonial { AuthorName, Role, City, Body, Rating, PhotoUrl,
+                     IsPublished, SortOrder }
+     Better still: once Phase 2 of the master plan adds real reviews, feature
+     genuine 5-star reviews on the landing page automatically. Real testimonials
+     convert far better than written ones, and they update themselves.
+
+  5. Dynamic featured teachers on the landing page
+     A FeaturedTeacher entity ALREADY EXISTS in your Domain folder but is
+     completely unused — AdminService.FeatureTeacherAsync just flips a boolean
+     on the profile and there is no way to un-feature. Wire it up properly with
+     a date range and sort order, and let the landing page pull from it.
+
+  6. Editable email/SMS templates
+     Once notifications exist (Phase D5), store the templates as content blocks
+     with {{placeholder}} substitution. Marketing edits the wording; developers
+     are not involved.
+
+  7. SEO fields per page
+     MetaTitle, MetaDescription, OgImage as content blocks. This is also how you
+     make the public teacher profiles from the master plan indexable.
+
+  8. Internationalization hook (Nepal-specific, high value)
+     Every content block and lookup item already has a Ne field in the schemas
+     above. Add a language toggle and serve the right column. A Nepali-language
+     option is a genuine competitive advantage in this market and costs little
+     if you build the fields in from the start rather than retrofitting.
+
+DELIVERABLE
+  A non-technical person updates the entire public-facing site — copy, stats,
+  testimonials, footer, SEO tags, and language — from the admin panel.
+
+===================================================================================
+   PHASE D5 — REAL-TIME: THE APP STOPS FEELING STATIC
+===================================================================================
+THE PROBLEM
+  "Dynamic" is not only about admin-editable data. Right now every screen shows
+  a snapshot from page-load time. A teacher watching their applications page
+  sees nothing when a parent shortlists them. Chat requires a manual refresh.
+  The product feels dead even when things are happening.
+
+WHAT TO BUILD
+
+  1. SignalR hub
+       Api/Hubs/NotificationHub.cs   mapped in Program.cs at /hubs/notifications
+       Api/Hubs/ChatHub.cs           mapped at /hubs/chat
+     Frontend: add @microsoft/signalr, connect on login, disconnect on logout,
+     reconnect with backoff.
+
+  2. Live chat — fixing a feature that currently has no entry point
+     Today MessagesController can only fetch a conversation if you already know
+     the other user's GUID. There is no inbox endpoint, no conversation list,
+     Message.IsRead is never set to true anywhere, and there is no unread count.
+     Build: conversation list endpoint, mark-as-read, unread badge, typing
+     indicator, live delivery over the hub.
+     ALSO ADD THE AUTHORIZATION CHECK: MessageService.SendMessageAsync currently
+     lets ANY authenticated user message ANY other user by GUID, with no
+     relationship required. Restrict to users sharing an application/post/demo.
+
+  3. Live notification centre
+       Notification { UserId, Type, Title, Body, LinkUrl, IsRead, CreatedAtUtc }
+     Bell icon with live unread count, pushed over the hub. Triggered by: new
+     application, shortlisted, hired, demo requested/confirmed, teacher
+     approved, payment recorded, new message.
+
+  4. Live dashboard counters
+     Admin dashboard numbers update without refresh. NOTE: fix the query first —
+     GetDashboardAsync currently loads four ENTIRE tables into memory to produce
+     seven numbers. Convert to CountAsync/SumAsync aggregates before you start
+     pushing them in real time, or you will hammer the database.
+
+  5. Optimistic UI + auto-refetch
+     React Query is already installed but underused. Add invalidateQueries after
+     every mutation and sensible refetchInterval on live lists.
+
+  6. Background job runner
+     Add Hangfire (or a hosted service) BEFORE wiring email/SMS. Notifications
+     must never run inline in a request — one slow SMTP call would block the
+     whole API response.
+
+DELIVERABLE
+  Data updates itself. Users see activity as it happens instead of refreshing
+  and hoping.
+
+===================================================================================
+   PHASE D6 — INTELLIGENCE: DYNAMIC PERSONALIZATION
+===================================================================================
+The final layer — the system adapts to each user instead of showing everyone
+the same thing.
+
+  1. Real distance search
+     The current geo filter is a lat/lng BOUNDING BOX — a square, not a circle —
+     with no distance sorting, so a teacher 40 km away diagonally can outrank one
+     5 km away. Implement haversine (or PostGIS), return the actual distance in
+     the DTO, and sort by it.
+
+  2. Dynamic relevance ranking
+     Results currently come back in arbitrary database order. Score by a
+     weighted blend of distance, rating, verification status, experience,
+     response rate, and recent activity — and put the WEIGHTS in AdminSettings
+     so you can tune ranking from the admin panel without a deploy.
+
+  3. Faceted filters with live counts
+     Once Phase D1 normalizes subjects and cities, you can render
+     "Mathematics (23) · Science (17) · English (11)" — counts computed from the
+     current result set. Impossible with free-text strings; trivial once
+     normalized.
+
+  4. Recommendations
+     "Teachers you might like" for parents (based on their posts), and
+     "Vacancies matching your profile" for teachers (subject + class + location
+     overlap). A simple weighted-overlap query gets you most of the value; no
+     machine learning needed.
+
+  5. Saved searches + alerts
+     "Notify me when a Class 10 Physics vacancy appears in Lalitpur." Strong
+     retention driver for teachers, and it brings them back to the site.
+
+  6. Personalized dashboards
+     Widget layout per role, admin-configurable, with each user able to
+     show/hide widgets.
+
+  7. Dynamic analytics
+     With normalized master data you can finally answer "most demanded subject
+     this month", "cities with unmet demand", "conversion rate by subject" —
+     and those insights are exactly what you show a buyer or investor.
+
+DELIVERABLE
+  Every user sees a different, relevant view of the platform, and you can tune
+  the algorithm from the admin panel.
+
+===================================================================================
+   EXECUTION NOTES
+===================================================================================
+
+DEPENDENCY ORDER — DO NOT SKIP AHEAD
+  D0 is the backbone; D1 needs it; D2 needs D1's data to render; D6's faceted
+  filters and ranking are impossible until D1 normalizes the strings. D3, D4,
+  and D5 are more independent — D4 (content/CMS) could be pulled forward if you
+  need marketing agility sooner, and D5 could be pulled forward if the product
+  feeling "dead" is your most urgent complaint.
+
+WHAT TO DO BEFORE ANY OF THIS
+  MASTER_UPGRADE_PLAN.txt Phase 0 contains live security and revenue holes:
+  hardcoded admin credentials in git, wide-open CORS, and a bypassable
+  commission paywall. Those take roughly 1-2 days and should be fixed before
+  you invest weeks in dynamic infrastructure. There is no point making a
+  leaking system more configurable.
+
+BIGGEST-BANG-FOR-EFFORT, IF YOU ONLY DO THREE THINGS
+  1. D0 + D1 subjects/cities  — fixes broken search, unlocks analytics and
+                                filters, removes the largest source of data mess
+  2. D3 config expansion      — most operational flexibility per hour of work
+  3. D5 notifications         — the single biggest jump in how alive the
+                                product feels to a real user
+
+A RULE TO ENFORCE THROUGHOUT
+  Never add a setting, flag, or lookup without writing the code that reads it in
+  the same commit. AutoApproveTeachers is the cautionary tale sitting in your
+  codebase right now: a switch in the admin panel that does absolutely nothing.
+===================================================================================

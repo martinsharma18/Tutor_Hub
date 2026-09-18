@@ -20,7 +20,13 @@ export const adminApi = {
   removeTeacher: (teacherProfileId) =>
     apiClient.delete(`/admin/teachers/${teacherProfileId}`).then((res) => res.data),
   getApplications: () => apiClient.get("/admin/applications").then((res) => res.data),
+  // Was pointed at /admin/applications/{id}/verify-payment, a route that never existed on the
+  // backend (silent 404) — the real endpoint lives on ApplicationsController.
   verifyPayment: (applicationId) =>
-    apiClient.post(`/admin/applications/${applicationId}/verify-payment`).then((res) => res.data),
+    apiClient.post(`/applications/${applicationId}/verify-payment`).then((res) => res.data),
+  auditLog: (params = {}) =>
+    apiClient
+      .get("/admin/audit-log", { params: { page: params.page ?? 1, pageSize: params.pageSize ?? 25 } })
+      .then((res) => res.data),
 };
 

@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, Star, BookOpen, Clock, DollarSign, Filter, X } from "lucide-react";
+import { Search, MapPin, Star, BookOpen, Clock, DollarSign, Filter, X, BadgeCheck } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { searchApi } from "../features/search/api";
+import { resolveFileUrl } from "../services/apiClient";
+import LookupSelect from "../components/forms/LookupSelect";
+import usePageMeta from "../hooks/usePageMeta";
 
 const TeachersPage = () => {
+  usePageMeta({
+    title: "Find Expert Tutors",
+    description: "Browse verified private tutors in Nepal by subject, class level, location, and teaching mode. See ratings and experience before you choose.",
+  });
+
   const location = useLocation();
   const initialFilters = location.state || {};
   
@@ -133,16 +141,13 @@ const TeachersPage = () => {
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Teaching Mode
                     </label>
-                    <select
+                    <LookupSelect
+                      category="TeachingMode"
+                      placeholder="All Modes"
                       value={filters.mode}
                       onChange={(e) => updateFilter("mode", e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-all"
-                    >
-                      <option value="">All Modes</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Hybrid">Hybrid</option>
-                    </select>
+                    />
                   </div>
 
                   {/* Experience */}
@@ -198,24 +203,40 @@ const TeachersPage = () => {
                       {/* Teacher Photo & Header */}
                       <div className="relative h-48 bg-gradient-to-br from-orange-400 to-orange-600">
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-orange-600 shadow-lg">
-                            {teacher.fullName?.charAt(0) || "T"}
-                          </div>
+                          {teacher.photoUrl ? (
+                            <img
+                              src={resolveFileUrl(teacher.photoUrl)}
+                              alt={teacher.fullName}
+                              className="w-24 h-24 rounded-full object-cover shadow-lg border-2 border-white"
+                            />
+                          ) : (
+                            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-orange-600 shadow-lg">
+                              {teacher.fullName?.charAt(0) || "T"}
+                            </div>
+                          )}
                         </div>
                         <div className="absolute top-4 right-4">
                           <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm font-bold text-slate-900">4.8</span>
+                            <span className="text-sm font-bold text-slate-900">
+                              {teacher.reviewCount > 0 ? teacher.averageRating.toFixed(1) : "New"}
+                            </span>
+                            {teacher.reviewCount > 0 && (
+                              <span className="text-xs text-slate-500">({teacher.reviewCount})</span>
+                            )}
                           </div>
                         </div>
                       </div>
 
                       {/* Teacher Info */}
                       <div className="p-6">
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">
+                        <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-1.5">
                           {teacher.fullName}
+                          {teacher.isApproved && (
+                            <BadgeCheck className="h-5 w-5 text-blue-500" aria-label="Verified teacher" />
+                          )}
                         </h3>
-                        
+
                         <div className="space-y-3 mb-4">
                           <div className="flex items-center gap-2 text-slate-600">
                             <MapPin className="h-4 w-4 text-orange-500" />

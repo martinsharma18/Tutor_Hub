@@ -16,8 +16,7 @@ public class ParentProfile : AuditableEntity
 
     public User User { get; set; } = default!;
 
-    public ICollection<TuitionPost> TuitionPosts { get; set; } = new List<TuitionPost>();
-
-    public ICollection<DemoRequest> DemoRequests { get; set; } = new List<DemoRequest>();
+    // No TuitionPosts/DemoRequests collections here: those link to the parent via
+    // User.Id (CreatedByUserId / ParentId), not ParentProfile.Id — see TuitionPost/DemoRequest.
 }
 

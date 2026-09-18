@@ -1,3 +1,5 @@
+using TuitionPlatform.Application.DTOs.TuitionPosts;
+
 namespace TuitionPlatform.Application.DTOs.Teachers;
 
 public class TeacherApplicationDto
@@ -19,5 +21,11 @@ public class TeacherApplicationDto
     public bool IsPaymentVerified { get; set; }
     public decimal CommissionAmount { get; set; }
     public string? ParentPhoneNumber { get; set; }
+    public TuitionPostDto? TuitionPost { get; set; }
+
+    /// <summary>True once a Placement has been created from this hire — set by
+    /// AdminService.GetAllApplicationsAsync, not by AutoMapper, since it depends on a separate
+    /// table. Lets the admin UI show "Create Placement" only when it's actually still needed.</summary>
+    public bool HasPlacement { get; set; }
 }
 

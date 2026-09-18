@@ -1,25 +1,52 @@
 import axios from "axios";
 import { store } from "../store";
-import { logout } from "../store/authSlice";
+import { logout, setCredentials } from "../store/authSlice";
+
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5083/api";
+
+// Uploaded files (see LocalFileStorageService) are served from the API's root, not under /api —
+// resolve a relative "/uploads/..." URL returned by the upload endpoint into an absolute one.
+export const apiOrigin = baseURL.replace(/\/api\/?$/, "");
+export const resolveFileUrl = (relativeUrl) =>
+  !relativeUrl || /^https?:\/\//i.test(relativeUrl) ? relativeUrl : `${apiOrigin}${relativeUrl}`;
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5083/api",
+  baseURL,
   withCredentials: false,
 });
+
+// Separate instance with no interceptors, used only for the refresh call itself — attaching this
+// to apiClient would recurse into the 401 handler below if the refresh call also came back 401.
+const refreshClient = axios.create({ baseURL, withCredentials: false });
+
+// Ensures concurrent 401s trigger exactly one refresh call instead of a stampede, each request
+// awaiting the same in-flight promise.
+let refreshPromise = null;
+
+async function refreshAccessToken() {
+  const state = store.getState();
+  const { accessToken, refreshToken } = state.auth;
+  if (!refreshToken) {
+    throw new Error("No refresh token available");
+  }
+
+  if (!refreshPromise) {
+    refreshPromise = refreshClient
+      .post("/auth/refresh", { accessToken, refreshToken })
+      .then((res) => res.data)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  const data = await refreshPromise;
+  store.dispatch(setCredentials(data));
+  return data.accessToken;
+}
 
 apiClient.interceptors.request.use((config) => {
   const state = store.getState();
   const token = state.auth.accessToken;
-  const expiresAt = state.auth.expiresAtUtc;
-
-  // Check if token is expired
-  if (token && expiresAt) {
-    const expiryDate = new Date(expiresAt);
-    if (expiryDate < new Date()) {
-      // Token expired, but don't logout here - let the response interceptor handle 401
-      // We could add refresh token logic here if needed
-    }
-  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -30,7 +57,7 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     // Log network errors for debugging
     if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || !error.response) {
       console.error('Network Error:', {
@@ -40,7 +67,24 @@ apiClient.interceptors.response.use(
         url: error.config?.url,
       });
     }
-    
+
+    const originalRequest = error.config;
+    const isAuthEndpoint = originalRequest?.url?.startsWith("/auth/");
+
+    // A 401 used to log the user out immediately, even for a routine expired access token.
+    // Now it retries once via /auth/refresh, and only logs out if the refresh itself fails.
+    if (error.response?.status === 401 && !originalRequest?._retried && !isAuthEndpoint) {
+      originalRequest._retried = true;
+      try {
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(originalRequest);
+      } catch {
+        store.dispatch(logout());
+        return Promise.reject(error);
+      }
+    }
+
     if (error.response?.status === 401) {
       store.dispatch(logout());
     }

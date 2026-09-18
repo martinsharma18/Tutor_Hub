@@ -9,5 +9,7 @@ public interface ITeacherApplicationRepository : IGenericRepository<TeacherAppli
     Task<IReadOnlyCollection<TeacherApplication>> GetByTeacherIdAsync(Guid teacherProfileId, CancellationToken cancellationToken = default);
 
     Task<TeacherApplication?> GetDetailedByIdAsync(Guid applicationId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<TeacherApplication>> ListAllDetailedAsync(CancellationToken cancellationToken = default);
 }
 

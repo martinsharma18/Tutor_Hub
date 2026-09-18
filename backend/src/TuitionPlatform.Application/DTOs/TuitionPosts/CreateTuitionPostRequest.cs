@@ -21,5 +21,8 @@ public class CreateTuitionPostRequest
     public string Schedule { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
+
+    // Optional: falls back to the requester's own phone number if omitted (see TuitionPostService).
+    public string? ParentPhoneNumber { get; set; }
 }
 

@@ -8,6 +8,7 @@ import { postsApi } from "../../features/posts/api";
 import { demoApi } from "../../features/demo/api";
 import TextAreaField from "../../components/forms/TextAreaField";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import {
   CheckCircle2, Star, Calendar, Briefcase, Phone, ExternalLink, LayoutDashboard,
 } from "lucide-react";
@@ -23,8 +24,17 @@ const TeacherDashboardPage = () => {
 
   const applyMutation = useMutation({
     mutationFn: teacherApi.applyToPost,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["teacher-applications"] }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-applications"] });
+      setMessages((prev) => ({ ...prev, [variables.tuitionPostId]: "" }));
+      toast.success("Application sent!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.detail ?? "Could not send your application. Please try again.");
+    },
   });
+
+  const appliedPostIds = new Set((myApplications ?? []).map((app) => app.tuitionPostId));
 
   const stats = [
     {
@@ -112,11 +122,11 @@ const TeacherDashboardPage = () => {
                     <p className="text-[10px] uppercase font-semibold text-emerald-600 mb-1">Parent Contact</p>
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-emerald-800 font-mono text-lg">
-                        {app.tuitionPost.parentPhoneNumber ?? "—"}
+                        {app.parentPhoneNumber ?? "—"}
                       </span>
-                      {app.tuitionPost.parentPhoneNumber && (
+                      {app.parentPhoneNumber && (
                         <a
-                          href={`tel:${app.tuitionPost.parentPhoneNumber}`}
+                          href={`tel:${app.parentPhoneNumber}`}
                           className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
                         >
                           <Phone className="h-4 w-4" />
@@ -143,32 +153,43 @@ const TeacherDashboardPage = () => {
       <SectionCard title="Available Vacancies" subtitle="Open tuition positions you can apply for">
         {posts && posts.items.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {posts.items.map((post) => (
-              <div key={post.id} className="flex flex-col gap-3">
-                <VacancyCard post={post} showActions={false} />
+            {posts.items.map((post) => {
+              const alreadyApplied = appliedPostIds.has(post.id);
+              return (
+                <div key={post.id} className="flex flex-col gap-3">
+                  <VacancyCard post={post} showActions={false} />
 
-                <div className="card p-4 bg-slate-50 border-slate-100">
-                  <TextAreaField
-                    label="Message to parent"
-                    rows={3}
-                    value={messages[post.id] ?? ""}
-                    onChange={(e) =>
-                      setMessages((prev) => ({ ...prev, [post.id]: e.target.value }))
-                    }
-                    className="mb-3"
-                  />
-                  <button
-                    onClick={() =>
-                      applyMutation.mutate({ tuitionPostId: post.id, message: messages[post.id] ?? "" })
-                    }
-                    className="btn-primary w-full text-sm"
-                    disabled={applyMutation.isPending || !messages[post.id]?.trim()}
-                  >
-                    {applyMutation.isPending ? "Applying…" : "Apply to this post"}
-                  </button>
+                  <div className="card p-4 bg-slate-50 border-slate-100">
+                    {alreadyApplied ? (
+                      <div className="badge-green w-full justify-center py-2 text-sm">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Already applied
+                      </div>
+                    ) : (
+                      <>
+                        <TextAreaField
+                          label="Message to parent"
+                          rows={3}
+                          value={messages[post.id] ?? ""}
+                          onChange={(e) =>
+                            setMessages((prev) => ({ ...prev, [post.id]: e.target.value }))
+                          }
+                          className="mb-3"
+                        />
+                        <button
+                          onClick={() =>
+                            applyMutation.mutate({ tuitionPostId: post.id, message: messages[post.id] ?? "" })
+                          }
+                          className="btn-primary w-full text-sm"
+                          disabled={applyMutation.isPending || !messages[post.id]?.trim()}
+                        >
+                          {applyMutation.isPending ? "Applying…" : "Apply to this post"}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="empty-state">

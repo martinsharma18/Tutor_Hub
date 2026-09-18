@@ -66,6 +66,9 @@ yarn-error.log*
 Thumbs.db
 desktop.ini
 
+## Local file uploads (LocalFileStorageService) — never commit user-uploaded content
+backend/src/TuitionPlatform.Api/wwwroot/uploads/
+
 ## Docker
 .dockerignore
 

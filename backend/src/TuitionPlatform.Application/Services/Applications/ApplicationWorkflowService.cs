@@ -1,5 +1,6 @@
 using AutoMapper;
 using TuitionPlatform.Application.Common.Exceptions;
+using TuitionPlatform.Application.Common.Security;
 using TuitionPlatform.Application.DTOs.Teachers;
 using TuitionPlatform.Application.Interfaces.Persistence;
 using TuitionPlatform.Application.Interfaces.Services;
@@ -13,9 +14,9 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
     private readonly IUserRepository _userRepository;
     private readonly ITuitionPostRepository _tuitionPostRepository;
     private readonly ITeacherApplicationRepository _applicationRepository;
-    private readonly IAdminSettingsRepository _adminSettingsRepository;
-    private readonly IPaymentRepository _paymentRepository;
     private readonly ITeacherProfileRepository _teacherRepository;
+    private readonly INotificationService _notificationService;
+    private readonly IAuditLogService _auditLogService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -23,18 +24,18 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         IUserRepository userRepository,
         ITuitionPostRepository tuitionPostRepository,
         ITeacherApplicationRepository applicationRepository,
-        IAdminSettingsRepository adminSettingsRepository,
-        IPaymentRepository paymentRepository,
         ITeacherProfileRepository teacherRepository,
+        INotificationService notificationService,
+        IAuditLogService auditLogService,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _userRepository = userRepository;
         _tuitionPostRepository = tuitionPostRepository;
         _applicationRepository = applicationRepository;
-        _adminSettingsRepository = adminSettingsRepository;
-        _paymentRepository = paymentRepository;
         _teacherRepository = teacherRepository;
+        _notificationService = notificationService;
+        _auditLogService = auditLogService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -117,6 +118,23 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         _tuitionPostRepository.Update(post);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        var teacherUserId = application.TeacherProfile?.UserId;
+        if (teacherUserId.HasValue)
+        {
+            var (title, body) = desiredStatus switch
+            {
+                ApplicationStatus.Shortlisted => ("You've been shortlisted", $"You were shortlisted for \"{post.Subject}\"."),
+                ApplicationStatus.Rejected => ("Application update", $"Your application for \"{post.Subject}\" was not selected."),
+                ApplicationStatus.Hired => ("You've been hired!", $"You were hired for \"{post.Subject}\". Complete the commission payment to unlock the parent's contact."),
+                _ => (string.Empty, string.Empty)
+            };
+
+            if (title.Length > 0)
+            {
+                await _notificationService.NotifyAsync(teacherUserId.Value, $"Application{desiredStatus}", title, body, "/teacher/applications", cancellationToken);
+            }
+        }
+
         return MapToDtoWithMasking(application, requester);
     }
 
@@ -139,28 +157,27 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
         application.HiredAtUtc = DateTime.UtcNow;
         post.Status = TuitionPostStatus.Closed;
 
-        var teacherUserId = application.TeacherProfile?.UserId
-                            ?? throw new ValidationException(new Dictionary<string, string[]>
-                            {
-                                ["teacher"] = new[] { "Teacher profile is missing user information." }
-                            });
+        _ = application.TeacherProfile?.UserId
+            ?? throw new ValidationException(new Dictionary<string, string[]>
+            {
+                ["teacher"] = new[] { "Teacher profile is missing user information." }
+            });
 
-        var settings = await _adminSettingsRepository.GetSettingsAsync(cancellationToken);
-        var commissionAmount = settings.FlatCommissionAmount ?? (request.AgreedAmount.Value * settings.CommissionPercentage / 100m);
-        var parentOwnerId = post.CreatedByUserId;
-
-        var payment = new Payment
+        // Previously this created a one-off Payment row as the commission gate. Under the managed
+        // placement model the money lives on Placement + monthly Invoice instead, and an admin
+        // sets the terms (fee, schedule, meeting link) rather than them being derived here.
+        // So hiring now just flags the match as ready and hands off to the office.
+        var admins = await _userRepository.ListAsync(u => u.Role == UserRole.Admin && u.IsActive, cancellationToken);
+        foreach (var admin in admins)
         {
-            ParentId = parentOwnerId,
-            TeacherId = teacherUserId,
-            TuitionPostId = post.Id,
-            Amount = request.AgreedAmount.Value,
-            CommissionAmount = commissionAmount,
-            TeacherNetAmount = request.AgreedAmount.Value - commissionAmount,
-            Status = PaymentStatus.Pending
-        };
-
-        await _paymentRepository.AddAsync(payment, cancellationToken);
+            await _notificationService.NotifyAsync(
+                admin.Id,
+                "PlacementNeeded",
+                "New hire — set up the placement",
+                $"\"{post.Subject}\" was filled at a proposed {request.AgreedAmount.Value:N2}/month. Create the placement to start billing.",
+                "/admin/placements",
+                cancellationToken);
+        }
     }
 
     public async Task<TeacherApplicationDto> VerifyPaymentAsync(
@@ -180,8 +197,11 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
                           ?? throw new NotFoundException("Teacher application", applicationId);
 
         application.IsPaymentVerified = true;
-        
+
         _applicationRepository.Update(application);
+
+        await _auditLogService.LogAsync(requesterId, "PaymentVerified", nameof(TeacherApplication), application.Id,
+            "Released parent contact details to teacher.", cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return MapToDtoWithMasking(application, requester);
@@ -191,18 +211,11 @@ public class ApplicationWorkflowService : IApplicationWorkflowService
     {
         var dto = _mapper.Map<TeacherApplicationDto>(application);
 
-        // Masking Logic
-        // 1. Admins see everything
-        // 2. The teacher who paid sees everything
-        // 3. For anyone else, mask it
-        
-        bool isAuthorized = requester.Role == UserRole.Admin || 
-                           (requester.Role == UserRole.Teacher && application.IsPaymentVerified && application.TeacherProfile.UserId == requester.Id);
-
-        if (!isAuthorized)
-        {
-            dto.ParentPhoneNumber = "********";
-        }
+        // AutoMapper no longer auto-populates ParentPhoneNumber (see ApplicationProfile), so it
+        // must be set explicitly here based on ContactVisibility — the single paywall gate.
+        dto.ParentPhoneNumber = ContactVisibility.ForApplication(requester, application)
+            ? application.TuitionPost.ParentPhoneNumber
+            : "********";
 
         return dto;
     }

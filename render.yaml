@@ -23,6 +23,32 @@ services:
         value: 60
       - key: Jwt__RefreshTokenDays
         value: 30
+      # CORS allow-list for production (comma-separated is NOT supported by array binding —
+      # set AllowedOrigins__0, AllowedOrigins__1, etc. in the Render dashboard).
+      # REQUIRED: fill in with the real Vercel production URL before this takes effect.
+      - key: AllowedOrigins__0
+        value: https://REPLACE-WITH-YOUR-VERCEL-DOMAIN
+      # Used to build password-reset / email-verification links sent to users.
+      - key: Frontend__BaseUrl
+        value: https://REPLACE-WITH-YOUR-VERCEL-DOMAIN
+      # SMTP is unconfigured by default — SmtpEmailSender logs instead of sending until real
+      # values are provided here (never commit real credentials to this file).
+      - key: Smtp__Host
+        sync: false
+      - key: Smtp__Port
+        value: 587
+      - key: Smtp__Username
+        sync: false
+      - key: Smtp__Password
+        sync: false
+      - key: Smtp__FromAddress
+        sync: false
+      # Admin account seeded on first run only (see AdminSeeder.cs) — never hardcoded.
+      # Set these as secrets in the Render dashboard, not committed here.
+      - key: AdminSeed__Email
+        sync: false
+      - key: AdminSeed__Password
+        sync: false
 
 databases:
   - name: tutor-hub-db

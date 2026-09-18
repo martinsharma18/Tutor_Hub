@@ -9,8 +9,12 @@ import {
   Phone, Mail, Calendar, Briefcase, Upload
 } from "lucide-react";
 import { teacherApi } from "../../features/teachers/api";
+import { filesApi } from "../../features/files/api";
+import LookupSelect from "../../components/forms/LookupSelect";
+import { resolveFileUrl } from "../../services/apiClient";
 import { useAppSelector } from "../../store/hooks";
 import { selectCurrentUser } from "../../store/authSlice";
+import { toast } from "react-hot-toast";
 
 const schema = z.object({
   bio: z.string().min(20, "Bio must be at least 20 characters"),
@@ -80,6 +84,28 @@ const TeacherProfilePage = () => {
     },
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async ({ file, field }) => {
+      const { url } = await filesApi.upload(file);
+      return teacherApi.updateProfile({ [field]: url });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teacher-profile"] });
+      toast.success("Uploaded!");
+    },
+    onError: (err) => toast.error(err.response?.data?.message ?? "Upload failed."),
+  });
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) uploadMutation.mutate({ file, field: "photoUrl" });
+  };
+
+  const handleCvChange = (e) => {
+    const file = e.target.files[0];
+    if (file) uploadMutation.mutate({ file, field: "cvUrl" });
+  };
+
   const inputClass = (error) =>
     `w-full px-4 py-3 rounded-xl border-2 outline-none transition-all text-slate-800 placeholder-slate-400 ${
       error
@@ -108,9 +134,17 @@ const TeacherProfilePage = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
           {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold shadow-lg border-2 border-white/30 flex-shrink-0">
-            {user?.fullName?.charAt(0)?.toUpperCase() || "T"}
-          </div>
+          <label className="relative w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-4xl font-bold shadow-lg border-2 border-white/30 flex-shrink-0 cursor-pointer overflow-hidden group">
+            {profile?.photoUrl ? (
+              <img src={resolveFileUrl(profile.photoUrl)} alt="" className="w-full h-full object-cover" />
+            ) : (
+              user?.fullName?.charAt(0)?.toUpperCase() || "T"
+            )}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Upload className="h-6 w-6 text-white" />
+            </div>
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoChange} />
+          </label>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -232,27 +266,33 @@ const TeacherProfilePage = () => {
               </div>
             </div>
 
-            {/* CV Download */}
-            {profile?.cvUrl && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-orange-500" /> Curriculum Vitae
-                </h2>
+            {/* CV Download / Upload */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-orange-500" /> Curriculum Vitae
+              </h2>
+              {profile?.cvUrl && (
                 <a
-                  href={profile.cvUrl}
-                  download="CV.pdf"
-                  className="flex items-center gap-3 p-4 bg-orange-50 border-2 border-orange-200 rounded-xl hover:bg-orange-100 transition-all group"
+                  href={resolveFileUrl(profile.cvUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 p-4 mb-3 bg-orange-50 border-2 border-orange-200 rounded-xl hover:bg-orange-100 transition-all group"
                 >
                   <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
                     <FileText className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-orange-800">Download CV</p>
-                    <p className="text-sm text-orange-600">Click to view / download</p>
+                    <p className="font-semibold text-orange-800">View CV</p>
+                    <p className="text-sm text-orange-600">Click to open</p>
                   </div>
                 </a>
-              </div>
-            )}
+              )}
+              <label className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 rounded-xl text-sm font-medium text-slate-500 hover:border-orange-300 hover:text-orange-600 cursor-pointer transition-colors">
+                <Upload className="h-4 w-4" />
+                {uploadMutation.isPending ? "Uploading…" : profile?.cvUrl ? "Replace CV" : "Upload CV"}
+                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleCvChange} disabled={uploadMutation.isPending} />
+              </label>
+            </div>
 
             {/* Pending Approval Notice */}
             {!profile?.isApproved && (
@@ -311,11 +351,11 @@ const TeacherProfilePage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Preferred Mode *</label>
-                <select {...register("preferredMode")} className={inputClass(errors.preferredMode)}>
-                  <option value="Online">Online</option>
-                  <option value="Offline">Offline</option>
-                  <option value="Hybrid">Hybrid</option>
-                </select>
+                <LookupSelect
+                  category="TeachingMode"
+                  {...register("preferredMode")}
+                  className={inputClass(errors.preferredMode)}
+                />
               </div>
             </div>
 

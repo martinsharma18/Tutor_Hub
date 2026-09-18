@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { adminApi } from "../../features/admin/api";
+import { resolveFileUrl } from "../../services/apiClient";
 import SectionCard from "../../components/ui/SectionCard";
 import { User, MapPin, BookOpen, Clock, ArrowLeft, Star, FileText } from "lucide-react";
 
 const AdminTeacherDetailsPage = () => {
   const { id } = useParams();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin-teacher-details", id],
     queryFn: () => adminApi.getTeacherDetails(id),
   });
@@ -21,9 +22,20 @@ const AdminTeacherDetailsPage = () => {
   }
 
   if (isError || !data) {
+    // Surface the actual reason — a bare "failed to load" makes a 404 vs 401 vs 500
+    // indistinguishable and turns every report into a guessing game.
+    const status = error?.response?.status;
+    const detail = error?.response?.data?.detail ?? error?.response?.data?.title;
+
     return (
       <div className="text-center py-12">
-        <p className="text-rose-600">Failed to load teacher details.</p>
+        <p className="text-rose-600 font-semibold">Failed to load teacher details.</p>
+        <p className="text-sm text-slate-500 mt-1">
+          {status === 404
+            ? "No teacher profile exists with this ID."
+            : detail ?? error?.message ?? "Unknown error."}
+          {status ? ` (HTTP ${status})` : ""}
+        </p>
         <Link to="/admin/teachers" className="text-brand-600 hover:underline mt-4 inline-block">
           Back to Teachers
         </Link>
@@ -46,21 +58,29 @@ const AdminTeacherDetailsPage = () => {
         </div>
         
         <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
-          <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-inner flex items-center justify-center shrink-0">
-            <span className="text-5xl font-bold text-white tracking-widest">
-              {profile.fullName.charAt(0).toUpperCase()}
-            </span>
+          <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-inner flex items-center justify-center shrink-0 overflow-hidden">
+            {profile.photoUrl ? (
+              <img src={resolveFileUrl(profile.photoUrl)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-5xl font-bold text-white tracking-widest">
+                {/* Guarded: fullName comes from a joined User row, so a data issue here must not
+                    take the whole page down with a TypeError. */}
+                {(profile.fullName?.charAt(0) ?? "?").toUpperCase()}
+              </span>
+            )}
           </div>
-          
+
           <div className="flex-1 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
               <div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight">{profile.fullName}</h1>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight">{profile.fullName ?? "Unknown teacher"}</h1>
                 <p className="text-slate-300 text-xl font-medium mt-2">{profile.qualification}</p>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-sm self-start">
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <span className="font-bold text-lg">${profile.hourlyRate}/hr</span>
+                <span className="font-bold text-lg">
+                  {profile.hourlyRate ? `NPR ${profile.hourlyRate}/hr` : "Rate negotiable"}
+                </span>
               </div>
             </div>
 
@@ -111,17 +131,22 @@ const AdminTeacherDetailsPage = () => {
                   {applications.map((app) => (
                     <div key={app.id} className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col md:flex-row gap-4 items-start justify-between hover:shadow-md transition">
                        <div>
+                         {/* Field names corrected to match TeacherApplicationDto: it exposes
+                             createdAtUtc and message, not appliedAtUtc/coverLetter — the old names
+                             rendered "Invalid Date" and always fell through to the placeholder. */}
                          <p className="font-semibold text-slate-900 flex items-center gap-2">
                            <FileText className="w-4 h-4 text-blue-500"/>
-                           Applied on {new Date(app.appliedAtUtc).toLocaleDateString()}
+                           {app.postSubject || "Tuition post"} · applied {new Date(app.createdAtUtc).toLocaleDateString()}
                          </p>
-                         <p className="text-sm text-slate-600 mt-2 line-clamp-2">{app.coverLetter || "No cover letter provided."}</p>
+                         <p className="text-sm text-slate-600 mt-2 line-clamp-2">{app.message || "No message provided."}</p>
                        </div>
                        <div className="shrink-0 flex flex-col items-end gap-2">
-                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${app.status === 'Accepted' ? 'bg-green-100 text-green-700' : app.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                         {/* ApplicationStatus is Pending/Shortlisted/Rejected/Hired — there is no
+                             "Accepted", so that green branch could never match. */}
+                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${app.status === 'Hired' ? 'bg-green-100 text-green-700' : app.status === 'Rejected' ? 'bg-red-100 text-red-700' : app.status === 'Shortlisted' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                             {app.status}
                          </span>
-                         <span className="text-sm text-slate-500">Tuition Post ID: {app.tuitionPostId.substring(0, 8)}...</span>
+                         <span className="text-sm text-slate-500">Post ID: {app.tuitionPostId?.substring(0, 8)}…</span>
                        </div>
                     </div>
                   ))}

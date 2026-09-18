@@ -14,6 +14,7 @@ public class PaymentService : IPaymentService
     private readonly ITuitionPostRepository _tuitionPostRepository;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IAdminSettingsRepository _adminSettingsRepository;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
@@ -22,6 +23,7 @@ public class PaymentService : IPaymentService
         ITuitionPostRepository tuitionPostRepository,
         IPaymentRepository paymentRepository,
         IAdminSettingsRepository adminSettingsRepository,
+        INotificationService notificationService,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
@@ -29,6 +31,7 @@ public class PaymentService : IPaymentService
         _tuitionPostRepository = tuitionPostRepository;
         _paymentRepository = paymentRepository;
         _adminSettingsRepository = adminSettingsRepository;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -67,6 +70,14 @@ public class PaymentService : IPaymentService
 
         await _paymentRepository.AddAsync(payment, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificationService.NotifyAsync(
+            teacher.Id,
+            "PaymentRecorded",
+            "Commission due",
+            $"A commission of {commissionAmount:C} is due for \"{post.Subject}\".",
+            "/teacher/payments",
+            cancellationToken);
 
         return _mapper.Map<PaymentDto>(payment);
     }

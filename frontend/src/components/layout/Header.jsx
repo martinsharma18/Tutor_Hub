@@ -78,8 +78,10 @@ const Header = () => {
                 >
                   Login
                 </Link>
+                {/* Single entry point — role is chosen on /register rather than with competing
+                    header buttons. */}
                 <Link
-                  to="/register/teacher"
+                  to="/register"
                   className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-800 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-orange-900 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   Sign Up
@@ -131,7 +133,7 @@ const Header = () => {
                     Login
                   </Link>
                 <Link
-                  to="/register/teacher"
+                  to="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block mt-2 px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-800 text-white font-semibold rounded-xl text-center"
                 >

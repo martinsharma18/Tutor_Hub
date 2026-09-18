@@ -20,6 +20,13 @@ public class TuitionPostConfiguration : IEntityTypeConfiguration<TuitionPost>
         builder.HasMany(p => p.Applications)
             .WithOne(a => a.TuitionPost)
             .HasForeignKey(a => a.TuitionPostId);
+
+        // CreatedByUserId is a plain Guid (no HasOne/HasMany to User configured), so it never got
+        // an FK-convention index despite being the filter for every "my posts" query. Status and
+        // CreatedAtUtc back GetOpenPostsAsync's filter+sort and every other paged listing here.
+        builder.HasIndex(p => p.CreatedByUserId);
+        builder.HasIndex(p => p.Status);
+        builder.HasIndex(p => p.CreatedAtUtc);
     }
 }
 

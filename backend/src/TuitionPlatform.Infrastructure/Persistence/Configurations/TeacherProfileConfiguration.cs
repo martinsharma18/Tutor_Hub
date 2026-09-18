@@ -19,6 +19,11 @@ public class TeacherProfileConfiguration : IEntityTypeConfiguration<TeacherProfi
         builder.HasMany(t => t.Applications)
             .WithOne(a => a.TeacherProfile)
             .HasForeignKey(a => a.TeacherProfileId);
+
+        // Every search request filters on IsApproved, then usually City — none of these are FK
+        // columns, so none were indexed by EF's default convention.
+        builder.HasIndex(t => t.IsApproved);
+        builder.HasIndex(t => new { t.City, t.Area });
     }
 }
 
