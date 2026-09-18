@@ -25,12 +25,14 @@ services:
         value: 30
       # CORS allow-list for production (comma-separated is NOT supported by array binding —
       # set AllowedOrigins__0, AllowedOrigins__1, etc. in the Render dashboard).
-      # REQUIRED: fill in with the real Vercel production URL before this takes effect.
+      # sync: false so blueprint auto-deploys never overwrite the real value back to a placeholder
+      # — set the actual Vercel production URL in the Render dashboard.
       - key: AllowedOrigins__0
-        value: https://REPLACE-WITH-YOUR-VERCEL-DOMAIN
+        sync: false
       # Used to build password-reset / email-verification links sent to users.
+      # sync: false for the same reason as AllowedOrigins__0 above.
       - key: Frontend__BaseUrl
-        value: https://REPLACE-WITH-YOUR-VERCEL-DOMAIN
+        sync: false
       # SMTP is unconfigured by default — SmtpEmailSender logs instead of sending until real
       # values are provided here (never commit real credentials to this file).
       - key: Smtp__Host
