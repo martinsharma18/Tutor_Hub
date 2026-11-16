@@ -1,4 +1,4 @@
-# Deployment
+# Frontend Deployment
 
 ## Vercel Frontend
 
@@ -11,14 +11,10 @@ The frontend is a Vite app inside the `frontend` directory. The Vercel project m
 - Install Command: `npm install`
 - Build Command: `npm run build`
 - Output Directory: `dist`
-- Production environment variable: `VITE_API_BASE_URL=https://tutor-hub-api.onrender.com/api`
+- Production environment variable: `VITE_API_BASE_URL` should point to your future backend's HTTPS URL, including `/api`.
 
 If auto-deploy stops after a merge, check the Vercel project settings first. The usual cause is the Git link or Root Directory being reset.
 
-## Render Backend
+The frontend routing configuration remains in `frontend/vercel.json`.
 
-The backend deploys from `backend/Dockerfile` and uses PostgreSQL on Render.
-
-- Service: `tutor-hub-api`
-- Health check: `/health`
-- Database: `tutor-hub-db`
+Backend hosting and database provisioning are not configured in this repository. Once the backend is hosted, update `VITE_API_BASE_URL` in Vercel and redeploy the frontend. Features that call the API require a reachable backend.

@@ -7,10 +7,9 @@ namespace TuitionPlatform.Infrastructure.Services;
 
 /// <summary>
 /// Writes uploads to local disk under wwwroot, served back out by app.UseStaticFiles() in
-/// Program.cs. This is a placeholder for a real deployment: Render's filesystem is ephemeral, so
-/// anything saved here is lost on every redeploy/restart. Swap in an Azure Blob Storage or
-/// S3-compatible IFileStorageService implementation once those credentials exist — no other code
-/// needs to change, callers only depend on this interface.
+/// Program.cs. Hosting must provide persistent disk storage to retain uploads across restarts.
+/// An object-storage IFileStorageService implementation can replace this service when needed;
+/// callers only depend on the interface.
 /// </summary>
 public class LocalFileStorageService : IFileStorageService
 {

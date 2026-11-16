@@ -26,7 +26,16 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Admin and authentication expose different DTOs with the same class name.
+    var defaultSchemaIdSelector = options.SchemaGeneratorOptions.SchemaIdSelector;
+    options.CustomSchemaIds(type => type == typeof(TuitionPlatform.Application.DTOs.Auth.UserDto)
+        ? "AuthUserDto"
+        : type == typeof(TuitionPlatform.Application.DTOs.Admin.UserDto)
+            ? "AdminUserDto"
+            : defaultSchemaIdSelector(type));
+});
 
 // Allowed origins come from config (AllowedOrigins:0, :1, ... or a CSV env var mapped the same
 // way). Previously this accepted every origin in every environment, including production, which
@@ -137,8 +146,7 @@ else
     app.UseHttpsRedirection();
 }
 
-// Serves wwwroot/uploads at /uploads — see LocalFileStorageService for the important caveat that
-// Render's filesystem is ephemeral, so this is a dev/placeholder storage backend, not production.
+// Serves wwwroot/uploads at /uploads. The hosting platform must provide persistent storage.
 app.UseStaticFiles();
 
 app.UseAuthentication();

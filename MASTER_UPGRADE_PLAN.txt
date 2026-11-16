@@ -50,7 +50,7 @@ STACK
              tokens · FluentValidation · AutoMapper · BCrypt
   Frontend : React 19 · Vite · Redux Toolkit · React Query · React Hook Form
              + Zod · TailwindCSS · Axios · react-hot-toast
-  Hosting  : Render (API, render.yaml) · Vercel (frontend) · Docker available
+  Hosting  : Vercel (frontend) · Backend hosting to be configured later
 
 DOMAIN ENTITIES (9 mapped)
   User · TeacherProfile · ParentProfile(*) · TuitionPost · TeacherApplication ·
@@ -526,7 +526,7 @@ OPERATIONS
   [ ] MIGRATIONS RUN AUTOMATICALLY ON STARTUP and rethrow on failure, so a bad
       migration takes the API down entirely. Fine for now; move to a controlled
       migration step before you have real customers.
-  [ ] VERIFY DATABASE BACKUPS are enabled on Render and actually test a restore.
+  [ ] VERIFY DATABASE BACKUPS when a database host is selected and test a restore.
   [ ] SWAGGER IS DEVELOPMENT-ONLY. Consider exposing it behind auth in staging
       so buyers/integrators can explore the API.
 
