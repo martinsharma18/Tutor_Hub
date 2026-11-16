@@ -58,17 +58,18 @@ To run the project locally, you will need:
 2.  **Node.js** (LTS recommended)
 3.  **PostgreSQL** instance
 
-For the backend:
-`docker compose up -d postgres`
+For the backend, configure `ConnectionStrings__DefaultConnection` in your environment with a PostgreSQL connection string for the database you choose, then run from the repository root:
 
-`dotnet run --project backend/src/TuitionPlatform.Api`
+```powershell
+dotnet run --project backend/src/TuitionPlatform.Api
+```
 
-The local API uses PostgreSQL on `127.0.0.1:55432` so it does not conflict with an existing PostgreSQL install on port `5432`.
+No database connection is included in the repository. The API requires a configured, reachable database to apply its existing migrations and start. Backend hosting can be configured later for your chosen platform.
 
 For the frontend:
 `cd frontend && npm install && npm run dev`
 
-Deployment settings are documented in `DEPLOYMENT.md`.
+Frontend Vercel deployment settings are documented in `DEPLOYMENT.md`.
 
 ---
 

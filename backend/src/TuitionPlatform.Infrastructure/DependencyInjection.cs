@@ -18,7 +18,12 @@ public static class DependencyInjection
         services.Configure<SmtpSettings>(configuration.GetSection(SmtpSettings.SectionName));
         services.Configure<FileStorageSettings>(configuration.GetSection(FileStorageSettings.SectionName));
 
-        var connectionString = GetPostgresConnectionString(configuration);
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Configure ConnectionStrings__DefaultConnection with your PostgreSQL connection string before starting the API.");
+        }
         services.AddDbContext<TuitionPlatformDbContext>(options =>
             options.UseNpgsql(connectionString));
 
@@ -50,30 +55,6 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return services;
-    }
-
-    private static string GetPostgresConnectionString(IConfiguration configuration)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? configuration["DATABASE_URL"];
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException("A PostgreSQL connection string is required.");
-        }
-
-        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var databaseUrl))
-        {
-            return connectionString;
-        }
-
-        var userInfo = databaseUrl.UserInfo.Split(':', 2);
-        var username = Uri.UnescapeDataString(userInfo[0]);
-        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
-        var database = databaseUrl.AbsolutePath.TrimStart('/');
-        var port = databaseUrl.IsDefaultPort ? 5432 : databaseUrl.Port;
-
-        return $"Host={databaseUrl.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
     }
 }
 

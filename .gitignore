@@ -69,8 +69,8 @@ desktop.ini
 ## Local file uploads (LocalFileStorageService) — never commit user-uploaded content
 backend/src/TuitionPlatform.Api/wwwroot/uploads/
 
-## Docker
-.dockerignore
-
 ## Logs
 *.log
+
+## Local credentials reference — never commit real passwords, even dev/test ones
+DEV_CREDENTIALS.local.md

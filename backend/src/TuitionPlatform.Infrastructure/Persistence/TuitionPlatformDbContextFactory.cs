@@ -23,9 +23,16 @@ public class TuitionPlatformDbContextFactory : IDesignTimeDbContextFactory<Tuiti
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Configure ConnectionStrings__DefaultConnection with your PostgreSQL connection string before running EF Core commands.");
+        }
+
         var optionsBuilder = new DbContextOptionsBuilder<TuitionPlatformDbContext>();
-        optionsBuilder.UseNpgsql(
-            configuration.GetConnectionString("DefaultConnection"));
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new TuitionPlatformDbContext(optionsBuilder.Options);
     }

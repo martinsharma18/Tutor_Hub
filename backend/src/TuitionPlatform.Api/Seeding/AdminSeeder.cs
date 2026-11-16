@@ -9,7 +9,7 @@ namespace TuitionPlatform.Api.Seeding;
 /// <summary>
 /// Creates the initial admin account on first run so a fresh deployment is usable.
 /// Credentials come from configuration (AdminSeed:Email / AdminSeed:Password), which
-/// on Render/production are supplied as environment variables — never hardcoded here.
+/// in production are supplied as environment variables — never hardcoded here.
 /// </summary>
 public static class AdminSeeder
 {
